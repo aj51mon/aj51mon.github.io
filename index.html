@@ -74,6 +74,10 @@ details[open] .chev{transform:rotate(90deg)}
 .cues li::marker{color:var(--accent)}
 .empty{color:var(--muted);text-align:center;padding:32px 0}
 .count{font-size:13px;color:var(--muted);margin-top:8px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.refresh{flex:none;width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
+.refresh.spin{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 mark{background:var(--accent-soft);color:inherit;border-radius:3px}
 @media (prefers-reduced-motion:reduce){.chev{transition:none}}
 </style>
@@ -81,7 +85,7 @@ mark{background:var(--accent-soft);color:inherit;border-radius:3px}
 </head><body>
 <div class="wrap">
   <header>
-    <h1>Gym Library <small id="sub"></small></h1>
+    <div class="top"><h1>Gym Library <small id="sub"></small></h1><button id="refresh" class="refresh" aria-label="Refresh">↻</button></div>
     <input id="q" type="search" placeholder="Search exercises, tags, cues" autocomplete="off" aria-label="Search">
     <div class="tabs" role="tablist">
       <button role="tab" id="t-workouts" data-tab="workouts">Workouts</button>
@@ -169,6 +173,11 @@ function render(){
   $("#list").innerHTML = html || `<div class="empty">Nothing matches. Clear the search or pick All.</div>`;
 }
 render();
+$("#refresh").addEventListener("click", async e => {
+  e.currentTarget.classList.add("spin");
+  try { const r = await navigator.serviceWorker?.getRegistration(); await r?.update(); } catch(err) {}
+  location.reload();
+});
 </script>
 <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
 </body></html>
