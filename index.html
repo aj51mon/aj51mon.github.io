@@ -118,6 +118,17 @@ details[open] .chev{transform:rotate(90deg)}
 .set button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;padding:2px 6px;border-radius:5px;cursor:pointer}
 .set button[data-armed]{background:#C0392B;color:#fff}
 .backup{display:grid;gap:10px}
+.bwcard{display:grid;gap:10px}
+.bwrow{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.bwrow .ghost{padding:9px 12px}
+.rank{margin-top:12px;padding:12px;border-radius:10px;background:var(--bg);border:1px solid var(--line);display:grid;gap:8px}
+.rank-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.tier{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:6px;background:var(--accent);color:var(--accent-ink)}
+.tier.sm{font-size:12px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.bar{height:8px;border-radius:99px;background:var(--chip);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;font-size:11.5px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.ladder span.on{color:var(--ink);font-weight:700}
 .backup p{margin:0;font-size:14px;color:var(--muted)}
 .backup .row{display:flex;gap:8px;flex-wrap:wrap}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .up{color:#5CC98A}:root:not([data-theme="light"]) .down,:root:not([data-theme="light"]) .lf-msg.err{color:#F0857A}}
@@ -245,6 +256,32 @@ const METRICS = {
   best:  {label:"Best set", unit:"reps", f:s => Math.max(...s.sets.map(x => x.reps))},
   total: {label:"Total reps", unit:"reps", f:s => s.sets.reduce((a, x) => a + x.reps, 0)}
 };
+/* Bodyweight log + strength tiers (male, estimated 1RM ÷ bodyweight; approximate) */
+const BKEY = "gl-bw-v1";
+let bwlog = []; try { bwlog = JSON.parse(localStorage.getItem(BKEY) || "[]"); if (!Array.isArray(bwlog)) bwlog = []; } catch(e) { bwlog = []; }
+const saveBW = () => { try { localStorage.setItem(BKEY, JSON.stringify(bwlog)); return true; } catch(e) { return false; } };
+const bwSorted = () => bwlog.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+function bwAt(d){ const s = bwSorted(); if (!s.length) return null; let v = null; for (const x of s) { if (x.date <= d) v = x.kg; else break; } return v ?? s[0].kg; }
+const TIERS = ["Beginner","Novice","Intermediate","Advanced","Elite"];
+const STANDARDS = [
+  {key:"Bench press",    cut:[0.5, 0.75, 1.25, 1.75, 2.0],  test:n => /\bbench\b/i.test(n) && !/incline|decline|dumbbell|\bdb\b|close/i.test(n)},
+  {key:"Squat",          cut:[0.75, 1.25, 1.5, 2.25, 2.75], test:n => /\bsquats?\b/i.test(n) && !/split|jump|front|goblet|bulgarian|pistol|hack|box/i.test(n)},
+  {key:"Deadlift",       cut:[1.0, 1.5, 2.0, 2.5, 3.0],     test:n => /deadlift/i.test(n) && !/romanian|rdl|stiff|single/i.test(n)},
+  {key:"Overhead press", cut:[0.35, 0.55, 0.8, 1.05, 1.35], test:n => /overhead press|\bohp\b|military press|shoulder press/i.test(n) && !/dumbbell|\bdb\b/i.test(n)}
+];
+const stdFor = ex => STANDARDS.find(s => s.test(ex)) || null;
+const e1 = x => x.reps === 1 ? x.kg : x.kg * (1 + x.reps / 30);
+function rankOf(ex){
+  const st = stdFor(ex); if (!st || isBW(ex)) return null;
+  const ss = sessions(ex); if (!ss.length) return null;
+  const last = ss[ss.length-1], bw = bwAt(last.d); if (!bw) return {st, need:"bw"};
+  const best = Math.max(...last.sets.map(e1)), ratio = best / bw;
+  let t = -1; st.cut.forEach((c, i) => { if (ratio >= c) t = i; });
+  const next = t < 4 ? st.cut[t+1] : null, prev = t >= 0 ? st.cut[t] : 0;
+  return {st, ratio, best, bw, tier: t >= 0 ? TIERS[t] : "Untrained", t, next, pct: next ? Math.max(0, Math.min(1, (ratio - prev) / (next - prev))) : 1, toNext: next ? next * bw - best : 0};
+}
+METRICS.ratio = {label:"× Bodyweight", unit:"× BW", f:s => { const b = bwAt(s.d); return b ? Math.max(...s.sets.map(e1)) / b : NaN; }};
+
 const exNames = () => [...new Set([...DATA.exercises.map(e => e.name), ...log.map(l => l.ex)])].sort((a,b) => a.localeCompare(b));
 function sessions(ex){
   const m = {};
@@ -292,12 +329,24 @@ function chartSVG(pts, unit){
   const line = P.map(p => p.map(n => n.toFixed(1)).join(",")).join(" ");
   const area = P.length > 1 ? `<polygon class="ar" points="${P[0][0].toFixed(1)},${H-B} ${line} ${P[P.length-1][0].toFixed(1)},${H-B}"/>` : "";
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Progress chart">
-    ${ticks.map(t => `<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}"/><text x="${L-6}" y="${(Y(t)+4).toFixed(1)}" text-anchor="end">${Math.round(t)}</text>`).join("")}
+    ${ticks.map(t => `<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}"/><text x="${L-6}" y="${(Y(t)+4).toFixed(1)}" text-anchor="end">${y1 - y0 < 5 ? t.toFixed(2) : Math.round(t)}</text>`).join("")}
     ${area}${P.length > 1 ? `<polyline class="ln" points="${line}"/>` : ""}
     ${P.map((p, i) => `<circle class="pt${i === P.length-1 ? " last" : ""}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${i === P.length-1 ? 4.5 : 3.5}"/>`).join("")}
     <text x="${L}" y="${H-6}" text-anchor="start">${fmtD(pts[0].d)}</text>
     ${pts.length > 1 ? `<text x="${W-R}" y="${H-6}" text-anchor="end">${fmtD(pts[pts.length-1].d)}</text>` : ""}
   </svg>`;
+}
+
+function rankPanel(ex){
+  const r = rankOf(ex); if (!r) return "";
+  if (r.need === "bw") return `<div class="rank"><div class="note" style="margin:0">Log your bodyweight above to see your ${esc(r.st.key.toLowerCase())} rank.</div></div>`;
+  return `<div class="rank">
+    <div class="rank-top"><span><b style="font-family:var(--display);font-size:24px">${r.ratio.toFixed(2)}×</b> <span class="meta">bodyweight</span></span><span class="tier">${r.tier}</span></div>
+    <div class="meta" style="margin:0">Est. 1RM ${num(r.best)} kg at ${num(r.bw)} kg bodyweight (latest session)</div>
+    ${r.next ? `<div class="bar"><i style="width:${Math.round(r.pct*100)}%"></i></div><div class="meta" style="margin:0">${num(Math.max(0, r.toNext))} kg more on your est. 1RM reaches ${TIERS[r.t+1]} (${r.next}× BW)</div>` : `<div class="meta" style="margin:0">Top tier reached.</div>`}
+    <div class="ladder">${TIERS.map((t, i) => `<span class="${i === r.t ? "on" : ""}">${t}<br>${r.st.cut[i]}×</span>`).join("")}</div>
+    <div class="note" style="margin:0">Male ${esc(r.st.key.toLowerCase())} tiers. Approximate: published standards vary by source.</div>
+  </div>`;
 }
 
 function liftCard(ex){
@@ -307,25 +356,26 @@ function liftCard(ex){
   const open = openEx === ex;
   let body = "";
   if (open) {
-    const ms = bw ? ["best","total"] : ["top","e1rm","vol"];
+    const ms = bw ? ["best","total"] : ["top","e1rm","vol","ratio"];
     let m = metricSel[ex]; if (!ms.includes(m)) m = metricSel[ex] = ms[bw ? 0 : 1];
     const cut = RANGES[range] ? iso(new Date(Date.now() - RANGES[range] * 864e5)) : "0000";
-    const inR = ss.filter(s => s.d >= cut).map(s => ({d:s.d, v:METRICS[m].f(s)}));
+    const inR = ss.filter(s => s.d >= cut).map(s => ({d:s.d, v:METRICS[m].f(s)})).filter(p => isFinite(p.v));
     const unit = METRICS[m].unit;
     let big = "", delta = "";
     if (inR.length) {
       const a = inR[0].v, b = inR[inR.length-1].v, ch = b - a;
-      big = `<b>${num(b)}</b><span class="meta">${unit}</span>`;
-      if (inR.length > 1) delta = `<span class="delta ${ch > 0 ? "up" : ch < 0 ? "down" : ""}">${ch > 0 ? "+" : ""}${num(ch)} ${unit} over ${RLABEL[range]}</span>`;
+      big = `<b>${unit === "× BW" ? b.toFixed(2) : num(b)}</b><span class="meta">${unit}</span>`;
+      if (inR.length > 1) delta = `<span class="delta ${ch > 0 ? "up" : ch < 0 ? "down" : ""}">${ch > 0 ? "+" : ""}${unit === "× BW" ? ch.toFixed(2) : num(ch)} ${unit} over ${RLABEL[range]}</span>`;
     }
     body = `<div class="seg">${ms.map(k => `<button class="chip" data-act="metric" data-ex="${esc(ex)}" data-v="${k}" aria-pressed="${k===m}">${METRICS[k].label}</button>`).join("")}</div>
       <div class="seg">${Object.keys(RANGES).map(k => `<button class="chip" data-act="range" data-v="${k}" aria-pressed="${k===range}">${k === "all" ? "All" : k.toUpperCase()}</button>`).join("")}</div>
-      ${inR.length ? `<div class="big">${big}${delta}</div>${chartSVG(inR, unit)}` : `<div class="note">No sessions in the last ${RLABEL[range]}. Pick a longer range.</div>`}
+      ${rankPanel(ex)}
+      ${inR.length ? `<div class="big">${big}${delta}</div>${chartSVG(inR, unit)}` : `<div class="note">${m === "ratio" && !bwlog.length ? "Log your bodyweight above to see this chart." : `No sessions in the last ${RLABEL[range]}. Pick a longer range.`}</div>`}
       ${m === "e1rm" ? `<div class="note">Estimated 1RM uses the Epley formula from your best set each day.</div>` : ""}
       <div class="sess">${ss.slice().reverse().map(s => `<div><div class="d">${fmtD(s.d, true)}</div><div class="sets">${s.sets.map(x => `<span class="set">${fmtSet(x)}<button data-act="del" data-id="${x.id}" aria-label="Delete set">✕</button></span>`).join("")}</div></div>`).join("")}</div>`;
   }
   return `<article class="card"><button class="lift-h" data-act="open" data-ex="${esc(ex)}" aria-expanded="${open}">
-      <div style="min-width:0"><h2>${esc(ex)}</h2><div class="meta">${bw ? "Bodyweight" : "Weighted"} · ${ss.length} session${ss.length===1?"":"s"} · last ${fmtD(last.d)}: ${bestLast}</div></div>
+      <div style="min-width:0"><h2>${esc(ex)}${(() => { const r = rankOf(ex); return r && r.tier ? `<span class="tier sm">${r.tier}</span>` : ""; })()}</h2><div class="meta">${bw ? "Bodyweight" : "Weighted"} · ${ss.length} session${ss.length===1?"":"s"} · last ${fmtD(last.d)}: ${bestLast}</div></div>
       <span class="chev" style="transform:rotate(${open ? 90 : 0}deg)" aria-hidden="true">›</span></button>${body}</article>`;
 }
 
@@ -337,12 +387,22 @@ function renderLifts(){
     .sort((a, b) => { const la = sessions(a).pop().d, lb = sessions(b).pop().d; return la < lb ? 1 : la > lb ? -1 : a.localeCompare(b); });
   $("#count").textContent = log.length ? `${names.length} exercise${names.length===1?"":"s"} · ${log.length} sets logged` : "";
   const cards = names.map(liftCard).join("") || (log.length ? "" : `<div class="card note">No lifts logged yet. Add your first set above, for example Bench Press, 60 kg × 8. Tap an exercise afterwards to see its chart.</div>`);
+  const bs = bwSorted(), lb = bs[bs.length-1];
+  const bwCard = `<section class="card bwcard"><h2>Bodyweight</h2>
+    ${lb ? `<div class="big" style="margin:0"><b>${num(lb.kg)}</b><span class="meta">kg · ${fmtD(lb.date, true)}</span>${bs.length > 1 ? (() => { const ch = lb.kg - bs[0].kg; return `<span class="delta">${ch > 0 ? "+" : ""}${num(ch)} kg since ${fmtD(bs[0].date)}</span>`; })() : ""}</div>` : `<div class="note" style="margin:0">Log your bodyweight to unlock × bodyweight charts and strength ranks for bench, squat, deadlift and overhead press.</div>`}
+    <div class="bwrow"><div class="field"><label for="bw-kg">Weight (kg)</label><input id="bw-kg" type="number" inputmode="decimal" step="0.1" min="20" placeholder="${lb ? num(lb.kg) : "70"}"></div>
+      <div class="field"><label for="bw-date">Date</label><input id="bw-date" type="date" value="${iso(new Date())}"></div>
+      <button class="ghost" data-act="bwadd">Add</button></div>
+    <div id="bw-msg" class="lf-msg" role="status"></div>
+    ${bs.length > 1 ? chartSVG(bs.slice(-30).map(x => ({d:x.date, v:x.kg})), "kg") : ""}
+    ${bs.length ? `<div class="sets">${bs.slice(-6).reverse().map(x => `<span class="set">${fmtD(x.date)}: ${num(x.kg)} kg<button data-act="bwdel" data-id="${x.id}" aria-label="Delete weigh-in">✕</button></span>`).join("")}</div>` : ""}
+  </section>`;
   let last = store.get("lastExport");
   const backup = `<section class="card backup"><h2>Backup</h2>
     <p>Your log is saved on this phone only. Export a backup to Files or iCloud Drive every week or two${last ? `. Last export: ${fmtD(last, true)}` : ""}.</p>
     <div class="row"><button class="ghost" data-act="export">Export backup</button><button class="ghost" data-act="import">Import backup</button>
     <input id="imp" type="file" accept=".json,application/json" hidden></div><div id="bk-msg" class="lf-msg" role="status"></div></section>`;
-  return cards + (log.length || true ? backup : "");
+  return bwCard + cards + backup;
 }
 
 $("#list").addEventListener("click", async e => {
@@ -351,13 +411,24 @@ $("#list").addEventListener("click", async e => {
   if (act === "open") { openEx = openEx === b.dataset.ex ? null : b.dataset.ex; store.set("openEx", openEx || ""); render(); }
   else if (act === "metric") { metricSel[b.dataset.ex] = b.dataset.v; render(); }
   else if (act === "range") { range = b.dataset.v; store.set("range", range); render(); }
-  else if (act === "del") {
+  else if (act === "bwadd") {
+    const kg = parseFloat(document.getElementById("bw-kg").value), date = document.getElementById("bw-date").value || iso(new Date());
+    const m = document.getElementById("bw-msg");
+    if (!(kg >= 20 && kg <= 400)) { m.textContent = "Enter your bodyweight in kg."; m.classList.add("err"); return; }
+    bwlog = bwlog.filter(x => x.date !== date);
+    bwlog.push({id: "b" + Date.now().toString(36), date, kg});
+    if (!saveBW()) { m.textContent = "Couldn't save on this phone."; m.classList.add("err"); return; }
+    render();
+  }
+  else if (act === "bwdel" || act === "del") {
     if (!b.hasAttribute("data-armed")) { b.setAttribute("data-armed", ""); b.textContent = "Delete?"; setTimeout(() => { if (b.isConnected) { b.removeAttribute("data-armed"); b.textContent = "✕"; } }, 3000); return; }
-    log = log.filter(x => x.id !== b.dataset.id); saveLog(); render();
+    if (act === "bwdel") { bwlog = bwlog.filter(x => x.id !== b.dataset.id); saveBW(); }
+    else { log = log.filter(x => x.id !== b.dataset.id); saveLog(); }
+    render();
   }
   else if (act === "export") {
     const name = `gym-log-${iso(new Date())}.json`;
-    const blob = new Blob([JSON.stringify({app:"gym-library", version:1, exported:new Date().toISOString(), log}, null, 1)], {type:"application/json"});
+    const blob = new Blob([JSON.stringify({app:"gym-library", version:2, exported:new Date().toISOString(), log, bodyweight:bwlog}, null, 1)], {type:"application/json"});
     let done = false;
     try { const f = new File([blob], name, {type:"application/json"}); if (navigator.canShare?.({files:[f]})) { await navigator.share({files:[f], title:name}); done = true; } } catch(err) { if (err?.name === "AbortError") return; }
     if (!done) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
@@ -373,8 +444,11 @@ $("#list").addEventListener("change", async e => {
     const rows = (Array.isArray(d) ? d : d.log || []).filter(x => x && x.ex && x.date && x.reps >= 1 && x.id);
     const have = new Set(log.map(x => x.id)); const add = rows.filter(x => !have.has(x.id));
     log = log.concat(add).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
-    if (!saveLog()) throw new Error("save");
-    render(); const m2 = document.getElementById("bk-msg"); if (m2) m2.textContent = `Imported ${add.length} new sets (${rows.length - add.length} already here).`;
+    const bwRows = (Array.isArray(d.bodyweight) ? d.bodyweight : []).filter(x => x && x.date && x.kg > 0 && x.id);
+    const bwHave = new Set(bwlog.map(x => x.date)); const bwAdd = bwRows.filter(x => !bwHave.has(x.date));
+    bwlog = bwlog.concat(bwAdd);
+    if (!saveLog() || !saveBW()) throw new Error("save");
+    render(); const m2 = document.getElementById("bk-msg"); if (m2) m2.textContent = `Imported ${add.length} new sets and ${bwAdd.length} weigh-ins.`;
   } catch(err) { if (m) { m.textContent = "That file isn't a Gym Library backup. Choose a gym-log .json file."; m.classList.add("err"); } }
 });
 
