@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gym Library</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gym Library">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#EEF0EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121514" media="(prefers-color-scheme: dark)">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-column phone app; sticky header with search + segmented tabs; cards listed below */
+:root{
+  --bg:#EEF0EE; --surface:#FFFFFF; --ink:#171A19; --muted:#5E6663; --line:#D5DAD7;
+  --accent:#B57F00; --accent-ink:#171A19; --accent-soft:#F6E7BF; --chip:#E3E7E4;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121514; --surface:#1B1F1E; --ink:#ECEFED; --muted:#9AA39F; --line:#2C3230;
+  --accent:#F2B92B; --accent-ink:#121514; --accent-soft:#3A3115; --chip:#262B29; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121514; --surface:#1B1F1E; --ink:#ECEFED; --muted:#9AA39F; --line:#2C3230;
+  --accent:#F2B92B; --accent-ink:#121514; --accent-soft:#3A3115; --chip:#262B29; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 10px;display:grid;gap:10px;border-bottom:1px solid var(--line)}
+h1{font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:.02em;text-transform:uppercase;margin:0;line-height:1;display:flex;align-items:baseline;gap:8px}
+h1 small{font-family:var(--body);font-size:13px;font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0}
+#q{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+#q:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--chip);border-radius:10px;padding:3px;gap:3px}
+.tabs button{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:.04em;text-transform:uppercase;border:0;background:transparent;color:var(--muted);padding:8px 4px;border-radius:8px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.filters{display:flex;gap:6px;overflow-x:auto;padding-block:12px 4px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{flex:none;font:inherit;font-size:14px;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 11px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list{display:grid;gap:10px;margin-top:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.card h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0;line-height:1.1;text-wrap:balance}
+.meta{color:var(--muted);font-size:14px;margin-top:2px}
+.rx{display:inline-flex;gap:8px;align-items:baseline;margin-top:10px;font-variant-numeric:tabular-nums}
+.rx b{font-family:var(--display);font-size:20px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tag{font-size:12.5px;background:var(--chip);color:var(--ink);padding:3px 8px;border-radius:6px}
+.note{font-size:14px;color:var(--muted);margin-top:8px}
+.note strong{color:var(--ink);font-weight:600}
+.wid{font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.06em;background:var(--accent-soft);color:var(--ink);padding:2px 7px;border-radius:5px}
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+.wh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.chev{font-family:var(--display);color:var(--muted);font-size:20px;transition:transform .15s}
+details[open] .chev{transform:rotate(90deg)}
+.steps{list-style:none;margin:12px 0 0;padding:0;display:grid}
+.steps li{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid var(--line)}
+.steps .n{font-family:var(--display);font-weight:700;color:var(--accent);font-size:18px}
+.dark-acc .steps .n{color:var(--accent)}
+.steps .x{font-weight:600}
+.steps .r{text-align:right;font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted);max-width:52vw}
+.steps .r b{color:var(--ink);font-weight:600}
+.sec{margin-top:14px}
+.sec h3{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.cues{margin:0;padding-left:20px;display:grid;gap:6px}
+.cues li::marker{color:var(--accent)}
+.empty{color:var(--muted);text-align:center;padding:32px 0}
+.count{font-size:13px;color:var(--muted);margin-top:8px}
+mark{background:var(--accent-soft);color:inherit;border-radius:3px}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header>
+    <h1>Gym Library <small id="sub"></small></h1>
+    <input id="q" type="search" placeholder="Search exercises, tags, cues" autocomplete="off" aria-label="Search">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="t-workouts" data-tab="workouts">Workouts</button>
+      <button role="tab" id="t-exercises" data-tab="exercises">Exercises</button>
+      <button role="tab" id="t-coaching" data-tab="coaching">Coaching</button>
+    </div>
+  </header>
+  <div id="filters" class="filters"></div>
+  <div id="count" class="count"></div>
+  <main id="list" class="list"></main>
+</div>
+
+<script>
+const DATA = {"exercises": [{"name": "Jump Squats", "body": "Legs", "secondary": "Quadriceps, Glutes", "tags": "Plyometrics, Power / Explosiveness, Bilateral, Legs / Lower Body", "sets": "3", "reps": "5 reps", "equipment": "", "notes": "", "workout": "W001"}, {"name": "Single-Leg Hops", "body": "Legs", "secondary": "Calves, Quadriceps", "tags": "Plyometrics, Reactive Strength, Unilateral, Legs / Lower Body", "sets": "3", "reps": "15 seconds per leg", "equipment": "", "notes": "", "workout": "W001"}, {"name": "Pogo Hops", "body": "Calves", "secondary": "Quadriceps", "tags": "Plyometrics, Reactive Strength, Bilateral, Legs / Lower Body", "sets": "3", "reps": "30 seconds", "equipment": "", "notes": "", "workout": "W001"}, {"name": "Split Squat Jumps", "body": "Legs", "secondary": "Quadriceps, Glutes", "tags": "Plyometrics, Power / Explosiveness, Split-Stance, Legs / Lower Body", "sets": "3", "reps": "15 seconds", "equipment": "", "notes": "Unclear if per leg or alternating; kept as given", "workout": "W001"}, {"name": "Running in Place / High Knees", "body": "Legs", "secondary": "Hip flexors, Calves", "tags": "Conditioning, Legs / Lower Body", "sets": "3", "reps": "30 seconds", "equipment": "", "notes": "Logged as one entry; split if a source separates them", "workout": "W001"}, {"name": "Skater Jumps", "body": "Glutes", "secondary": "Quadriceps", "tags": "Plyometrics, Lateral Movement, Unilateral, Legs / Lower Body", "sets": "3", "reps": "20 seconds", "equipment": "", "notes": "", "workout": "W001"}, {"name": "Jumping Jacks", "body": "Full Body", "secondary": "Calves, Shoulders", "tags": "Conditioning, Plyometrics, Full Body", "sets": "3", "reps": "30 seconds", "equipment": "", "notes": "", "workout": "W001"}, {"name": "Vertical Jumps", "body": "Legs", "secondary": "Quadriceps, Glutes, Calves", "tags": "Plyometrics, Power / Explosiveness, Bilateral, Legs / Lower Body", "sets": "", "reps": "15 reps", "equipment": "", "notes": "Primes nervous system; best jump 30.1 in noted in video; sets not stated", "workout": "W002"}, {"name": "Back Squats", "body": "Legs", "secondary": "Quadriceps, Glutes", "tags": "Strength, Bilateral, Legs / Lower Body", "sets": "1 + 3", "reps": "1 x 5 reps @ 85% 1RM, then 3 x 6-8 reps @ 80% 1RM", "equipment": "Barbell, power rack", "notes": "Main strength lift; block accumulating reps in 5-8 range", "workout": "W002"}, {"name": "Barbell Romanian Deadlifts (RDLs)", "body": "Legs", "secondary": "Hamstrings, Glutes", "tags": "Strength, Pull, Bilateral, Legs / Lower Body", "sets": "3", "reps": "6-8 reps", "equipment": "Barbell; lifting belt + straps recommended for heavy loads", "notes": "Push hips back, lower to mid-shin", "workout": "W002"}, {"name": "Dumbbell Walking Lunges", "body": "Legs", "secondary": "Quadriceps, Glutes", "tags": "Strength, Unilateral, Balance / Stability, Legs / Lower Body", "sets": "2", "reps": "6 reps per leg", "equipment": "Dumbbells (100 lb used)", "notes": "", "workout": "W002"}, {"name": "Nordic Ham Curls (band-assisted)", "body": "Legs", "secondary": "Hamstrings", "tags": "Strength, Rehab / Prehab, Bilateral, Legs / Lower Body", "sets": "2", "reps": "6 reps", "equipment": "Resistance band", "notes": "Band assists controlled eccentric; used in place of hamstring curl machine", "workout": "W002"}], "workouts": [{"id": "W001", "name": "Lower-Body Plyometrics", "primary": "Plyometrics", "secondary": "Legs / Lower Body", "items": [{"n": 1, "ex": "Jump Squats", "sets": "3", "reps": "5 reps"}, {"n": 2, "ex": "Single-Leg Hops", "sets": "3", "reps": "15 seconds per leg"}, {"n": 3, "ex": "Pogo Hops", "sets": "3", "reps": "30 seconds"}, {"n": 4, "ex": "Split Squat Jumps", "sets": "3", "reps": "15 seconds"}, {"n": 5, "ex": "Running in Place / High Knees", "sets": "3", "reps": "30 seconds"}, {"n": 6, "ex": "Skater Jumps", "sets": "3", "reps": "20 seconds"}, {"n": 7, "ex": "Jumping Jacks", "sets": "3", "reps": "30 seconds"}]}, {"id": "W002", "name": "Dylan's Leg Day: Strength + Power", "primary": "Strength", "secondary": "Power / Explosiveness, Legs / Lower Body", "items": [{"n": 1, "ex": "Vertical Jumps", "sets": "", "reps": "15 reps"}, {"n": 2, "ex": "Back Squats", "sets": "1 + 3", "reps": "1 x 5 reps @ 85% 1RM, then 3 x 6-8 reps @ 80% 1RM"}, {"n": 3, "ex": "Barbell Romanian Deadlifts (RDLs)", "sets": "3", "reps": "6-8 reps"}, {"n": 4, "ex": "Dumbbell Walking Lunges", "sets": "2", "reps": "6 reps per leg"}, {"n": 5, "ex": "Nordic Ham Curls (band-assisted)", "sets": "2", "reps": "6 reps"}]}], "coaching": {"Hang Power Clean": {"1. Setup & Safety": ["Start with an empty bar; master the pattern before loading.", "Feet hip-width, bar at mid-thigh (hang).", "Shoulders slightly ahead of bar, lats engaged, core braced, neutral spine."], "2. Mobility & Grip": ["Elbow reaches: alternate each elbow up and back to open lats/shoulders. Prevents low-elbow catch.", "Hook grip: thumb on bar first, index + middle fingers over thumb.", "Hook grip feels awkward at first; re-grip it on every descent until habitual."], "3. Hip Muscle Clean (shrug + pull)": ["From hang, drive legs and hips into a vertical shrug.", "Keep bar close; punch elbows up and high, like the top of a hammer curl.", "Release hook at the top, re-catch on the way down.", "Goal: speed and height in the upper pull, no knee re-bend."], "4. Hang Muscle Clean (hip-knee-hip)": ["Hip: hinge, knees slightly bent.", "Knee: load hamstrings, slight knee re-bend to build posterior-chain tension.", "Hip: drive back through, then explode into shrug, pull, elbows high.", "Think: kettlebell-swing hinge + hammer curl finish."], "5. Full Hang Power Clean": ["Start in hang: hips back, knees bent, bar at mid-thigh.", "First pull to power position: hip, knee, hip. Bar stays close.", "Triple extension: jump vertically through ankles, knees and hips together. Legs make the height, not arms.", "As you leave the ground, shrug hard and pull, bar tight to torso.", "Catch: elbows up and around fast; knees out, hips back into a partial squat.", "Receive on front rack with elbows high and torso upright, not collapsed.", "Stand tall, reset feet if needed, lower to hang under control."], "6. Key Cues": ["Bar path: straight vertical line, close to the body.", "Hip-knee-hip sets the timing for the second pull.", "Jump makes height, shrug starts the pull, pull brings the bar up.", "Receive, don't chase: drive the bar up, then get under it. No arm-pulling, no low elbows."], "7. Progression": ["Start 3 x 10 light to build the pattern.", "When confident, add load and drop reps.", "As load rises it becomes a squat clean: if the bar won't go high enough, drop into a full front squat to receive."], "8. Common Errors": ["Low elbows on catch: elbow mobility drills + drive elbows high.", "Knees shooting forward: hips back first, then slight knee bend. Avoid the knee jut."], "9. Principle": ["Legs and hips drive the clean; arms are just hooks to guide and receive.", "Every session: empty bar first to groove the pattern."]}}};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
+let tab = (["workouts","exercises","coaching"].includes(location.hash.slice(1)) && location.hash.slice(1)) || store.get("tab") || "workouts";
+let filter = "All";
+const q = $("#q");
+const split = s => s ? s.split(",").map(x => x.trim()).filter(Boolean) : [];
+const match = (txt) => { const t = q.value.trim().toLowerCase(); return !t || txt.toLowerCase().includes(t); };
+
+$("#sub").textContent = `${DATA.workouts.length} workouts · ${DATA.exercises.length} exercises`;
+
+function setTab(t){ tab = t; filter = "All"; store.set("tab", t); render(); }
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+q.addEventListener("input", render);
+
+function chips(opts){
+  $("#filters").innerHTML = ["All", ...opts].map(o => `<button class="chip" aria-pressed="${o===filter}" data-f="${esc(o)}">${esc(o)}</button>`).join("");
+  $("#filters").querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => { filter = c.dataset.f; render(); }));
+}
+
+function rx(sets, reps){
+  return sets ? `<b>${esc(sets)}</b><span>× ${esc(reps)}</span>` : `<span>${esc(reps)}</span>`;
+}
+
+function renderWorkouts(){
+  const cats = [...new Set(DATA.workouts.flatMap(w => [w.primary, ...split(w.secondary)]))];
+  chips(cats);
+  const ws = DATA.workouts.filter(w => (filter==="All" || w.primary===filter || split(w.secondary).includes(filter))
+    && match([w.id,w.name,w.primary,w.secondary,...w.items.map(i=>i.ex)].join(" ")));
+  $("#count").textContent = `${ws.length} workout${ws.length===1?"":"s"}`;
+  return ws.map(w => `<details class="card" ${ws.length===1?"open":""}>
+    <summary><div class="wh"><div><span class="wid">${esc(w.id)}</span><h2 style="margin-top:6px">${esc(w.name)}</h2>
+      <div class="meta">${esc(w.primary)}${w.secondary?` · ${esc(w.secondary)}`:""} · ${w.items.length} exercises</div></div><span class="chev" aria-hidden="true">›</span></div></summary>
+    <ol class="steps">${w.items.map(i => `<li><span class="n">${i.n}</span><span class="x">${esc(i.ex)}</span><span class="r">${i.sets?`<b>${esc(i.sets)}</b> × `:""}${esc(i.reps)}</span></li>`).join("")}</ol>
+  </details>`).join("");
+}
+
+function renderExercises(){
+  chips(["Legs","Glutes","Calves","Core","Chest","Back","Shoulders","Arms","Full Body"].filter(b => DATA.exercises.some(e => e.body===b))
+    .concat([...new Set(DATA.exercises.flatMap(e => split(e.tags)))].sort()));
+  const es = DATA.exercises.filter(e => (filter==="All" || e.body===filter || split(e.tags).includes(filter))
+    && match(Object.values(e).join(" ")));
+  $("#count").textContent = `${es.length} exercise${es.length===1?"":"s"}`;
+  return es.map(e => `<article class="card">
+    <div class="wh"><h2>${esc(e.name)}</h2><span class="wid">${esc(e.workout)}</span></div>
+    <div class="meta">${esc(e.body)}${e.secondary?` · ${esc(e.secondary)}`:""}</div>
+    <div class="rx">${rx(e.sets, e.reps)}</div>
+    <div class="tags">${split(e.tags).map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+    ${e.equipment?`<div class="note"><strong>Equipment:</strong> ${esc(e.equipment)}</div>`:""}
+    ${e.notes?`<div class="note">${esc(e.notes)}</div>`:""}
+  </article>`).join("");
+}
+
+function renderCoaching(){
+  const moves = Object.keys(DATA.coaching);
+  chips(moves);
+  const out = moves.filter(m => filter==="All" || m===filter).map(m => {
+    const secs = Object.entries(DATA.coaching[m]).map(([s, cues]) => {
+      const cs = cues.filter(c => match(m+" "+s+" "+c));
+      return cs.length ? `<div class="sec"><h3>${esc(s.replace(/^\d+\.\s*/,""))}</h3><ul class="cues">${cs.map(c=>`<li>${esc(c)}</li>`).join("")}</ul></div>` : "";
+    }).join("");
+    return secs ? `<details class="card" open><summary><div class="wh"><h2>${esc(m)}</h2><span class="chev" aria-hidden="true">›</span></div></summary>${secs}</details>` : "";
+  }).filter(Boolean);
+  $("#count").textContent = `${out.length} movement${out.length===1?"":"s"}`;
+  return out.join("");
+}
+
+function render(){
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===tab));
+  const html = tab==="workouts" ? renderWorkouts() : tab==="exercises" ? renderExercises() : renderCoaching();
+  $("#list").innerHTML = html || `<div class="empty">Nothing matches. Clear the search or pick All.</div>`;
+}
+render();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
+</body></html>
