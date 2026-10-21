@@ -640,7 +640,7 @@ function consistencyCard(){
 function bwAvg7(bs){ return bs.map((x, i) => { const lo = iso(new Date(new Date(x.date + "T00:00").getTime() - 6 * 864e5)); const win = bs.filter(y => y.date >= lo && y.date <= x.date); return {d:x.date, v: win.reduce((a, y) => a + y.kg, 0) / win.length}; }); }
 let liftView = store.get("gl-liftview") || "train";
 function renameExercise(from, to){
-  to = exNames().find(n => n.toLowerCase() === to.toLowerCase()) || to;
+  to = exNames().find(n => n !== from && n.toLowerCase() === to.toLowerCase()) || to;
   log.forEach(l => { if (l.ex === from) l.ex = to; });
   wsess.forEach(r => r.items.forEach(it => { if (it.ex === from) it.ex = to; }));
   plans.forEach(p => p.items.forEach(it => { if (it.ex === from) it.ex = to; }));
@@ -657,7 +657,8 @@ function dupGroups(){
   pool.forEach(n => { const D = dbOf(n); const key = D ? "db:" + D.name : "k:" + keysOf(n)[0]; if (!groups.has(key)) groups.set(key, {canon: D ? D.name : null, names: []}); groups.get(key).names.push(n); });
   const out = [];
   groups.forEach((g, key) => {
-    const names = [...new Set(g.names)]; if (names.filter(n => used.includes(n)).length < 1 || names.length < 2) return;
+    const names = [...new Set(g.names)], u = names.filter(n => used.includes(n)); if (u.length < 1 || names.length < 2) return;
+    if (u.length === 1 && g.canon && u[0] === g.canon) return;
     const k = names.slice().sort().join("|"); if (nd.has(k)) return;
     const count = n => log.filter(l => l.ex === n).length;
     out.push({key: k, names: names.sort((a, b) => count(b) - count(a)), canon: g.canon, count});
@@ -1459,6 +1460,23 @@ function render(){
   if (lv === "train") $("#sessbox").innerHTML = renderSess();
   const html = tab==="workouts" ? renderWorkouts() : tab==="exercises" ? (FRIENDS ? renderExercisesF() : renderExercises()) : tab==="lifts" ? renderLifts() : renderCardio();
   $("#list").innerHTML = html || (lv === "train" ? "" : `<div class="empty">Nothing matches. Clear the search or pick All.</div>`);
+}
+/* One-time clean-up of Aaron's exercise names (agreed 21 Oct 2026). Runs once, only in the main app. */
+if (!FRIENDS && !store.get("gl-mig-1")) {
+  try {
+    const M = [["Lat pull down","Lat Pulldown"],["Pull down","Lat Pulldown"],["Tricep pull downs","Tricep Pushdown"],["Tricep push downs","Tricep Pushdown"],
+      ["Single arm dumbbell curl","Dumbbell Curl"],["Dumbbell curls","Dumbbell Curl"],["Bicep curl","Dumbbell Curl"],["Bench press","Barbell Bench Press"],["Back squat","Back Squat"],
+      ["Seated overhead barbell press","Seated Barbell Overhead Press"],["Barbell shoulder press","Seated Barbell Overhead Press"]];
+    const has = n => log.some(l => l.ex === n) || wsess.some(r => r.items.some(i => i.ex === n)) || plans.some(p => p.items.some(i => i.ex === n));
+    M.forEach(([f, t]) => { if (has(f)) renameExercise(f, t); });
+    /* curls logged before per-hand existed: entered per hand, so double their volume */
+    log.forEach(l => { if (l.ex === "Dumbbell Curl" && !l.bw) l.ph = true; });
+    wsess.forEach(r => r.items.forEach(it => { if (it.ex === "Dumbbell Curl") it.sets.forEach(x => { if (!x.bw) x.ph = true; }); }));
+    phmap["dumbbell curl"] = true;
+    if (!prmap["back squat"]) prmap["back squat"] = {kg: 140, reps: 1};
+    saveLog(); wr(SKEY, wsess); wr(HKEY, phmap); savePrior();
+    store.set("gl-mig-1", "1");
+  } catch(e) {}
 }
 render();
 async function doRefresh(){
