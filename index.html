@@ -173,7 +173,9 @@ details[open] .chev{transform:rotate(90deg)}
 .closed b{font-family:var(--display);font-size:18px}
 .closed .hint{margin-top:2px}
 .cf{display:grid;gap:10px}
-.cf3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cf3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1fr);gap:8px;align-items:end}
+.tpair{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.tpair input{padding-left:6px;padding-right:6px}
 .cf select,.cf textarea{width:100%;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .cf textarea{min-height:64px;resize:vertical}
 .crow{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}
@@ -728,7 +730,7 @@ function cardioForm(prefix, withDate){
   return `<div class="cf">
     <div class="field"><label for="${prefix}-type">Type</label><select id="${prefix}-type" data-act="ctype" data-prefix="${prefix}">${CTYPES.map(x => `<option value="${x.k}" ${x.k===t.k?"selected":""}>${x.label}</option>`).join("")}</select></div>
     <div class="cf3"><div class="field"><label for="${prefix}-dist">Distance (${t.unit})</label><input id="${prefix}-dist" class="plain" type="number" inputmode="decimal" step="${t.unit==="km"?"0.01":"10"}" min="0" placeholder="${t.unit==="km"?"5.0":"2000"}"></div>
-      <div class="field"><label for="${prefix}-time">Time</label><input id="${prefix}-time" class="plain" inputmode="numeric" placeholder="25:30"></div>
+      <div class="field"><label for="${prefix}-min">Time (min : sec)</label><div class="tpair"><input id="${prefix}-min" class="plain" type="number" inputmode="decimal" min="0" step="any" placeholder="25" aria-label="Minutes"><input id="${prefix}-sec" class="plain" type="number" inputmode="numeric" min="0" max="59" placeholder="30" aria-label="Seconds"></div></div>
       <div class="field"><label for="${prefix}-hr">Avg HR</label><input id="${prefix}-hr" class="plain" type="number" inputmode="numeric" placeholder="optional"></div></div>
     ${withDate ? `<div class="field"><label for="${prefix}-date">Date</label><input id="${prefix}-date" class="plain" type="date" value="${iso(new Date())}"></div>` : ""}
     ${t.run ? `<div class="field"><label for="${prefix}-notes">Run notes</label><textarea id="${prefix}-notes" placeholder="How it felt, weather, terrain"></textarea></div>` : ""}
@@ -737,11 +739,12 @@ function cardioForm(prefix, withDate){
 }
 function readCardio(prefix){
   const g = id => document.getElementById(prefix + "-" + id);
-  const type = g("type").value, t = ctype(type), dist = parseFloat(g("dist").value), secs = parseTime(g("time").value), hr = parseInt(g("hr").value, 10);
+  const type = g("type").value, t = ctype(type), dist = parseFloat(String(g("dist").value).replace(",", ".")), mn = parseFloat(String(g("min").value).replace(",", ".")) || 0, sc = parseFloat(g("sec").value) || 0, secs = Math.round(mn * 60 + sc), hr = parseInt(g("hr").value, 10);
   const m = g("msg");
   const fail = x => { m.textContent = x; m.classList.add("err"); return null; };
   if (!(dist > 0)) return fail(`Enter the distance in ${t.unit}.`);
-  if (!(secs > 0)) return fail("Enter the time as mm:ss, for example 25:30.");
+  if (!(secs > 0)) return fail("Enter the time in minutes and seconds, for example 25 and 30.");
+  if (sc >= 60) return fail("Seconds must be under 60.");
   return {id: "c" + Date.now().toString(36) + Math.random().toString(36).slice(2,5), type, dist, secs, hr: hr > 0 ? hr : null, notes: t.run && g("notes") ? g("notes").value.trim() : "", date: g("date") ? g("date").value || iso(new Date()) : iso(new Date())};
 }
 
@@ -1147,7 +1150,7 @@ function sessClick(e){
 }
 function sessChange(e){
   const t = e.target; if (!t.dataset) return;
-  if (t.dataset.act === "ctype") { store.set("ctype", t.value); const keep = ["dist","time","hr"].map(k => (document.getElementById(t.dataset.prefix + "-" + k) || {}).value); render(); ["dist","time","hr"].forEach((k, n) => { const el = document.getElementById(t.dataset.prefix + "-" + k); if (el && keep[n]) el.value = keep[n]; }); return; }
+  if (t.dataset.act === "ctype") { store.set("ctype", t.value); const keep = ["dist","min","sec","hr"].map(k => (document.getElementById(t.dataset.prefix + "-" + k) || {}).value); render(); ["dist","min","sec","hr"].forEach((k, n) => { const el = document.getElementById(t.dataset.prefix + "-" + k); if (el && keep[n]) el.value = keep[n]; }); return; }
   if (!active) return;
   const i = +t.dataset.i;
   if (t.dataset.act === "sbw") { active.items[i].bw = t.checked; saveActive(); render(); }
