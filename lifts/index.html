@@ -300,6 +300,7 @@ let tab = (["workouts","exercises","lifts","cardio"].includes(location.hash.slic
 if (tab === "coaching" || location.hash === "#coaching") tab = "exercises";
 if (!["workouts","exercises","lifts","cardio"].includes(tab)) tab = "workouts";
 let filter = "All";
+let openToday = !location.hash;
 const q = $("#q");
 const split = s => s ? s.split(",").map(x => x.trim()).filter(Boolean) : [];
 const match = (txt) => { const t = q.value.trim().toLowerCase(); return !t || txt.toLowerCase().includes(t); };
@@ -912,11 +913,71 @@ document.getElementById("restbar").addEventListener("click", e => {
 });
 
 function mkItem(ex, plan){ return {ex, bw: defaultBW(ex), ph: isPerHand(ex), plan: plan || null, sets: [], acc: 0, seg: null, closed: false}; }
+/* ---------- Today: the day's plan, targets and warm-ups ---------- */
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const dayPlan = (d = new Date()) => allPlans().find(p => p.name.toLowerCase().startsWith(DAYS[d.getDay()].toLowerCase()));
+const nextDayPlan = () => { for (let k = 1; k <= 7; k++) { const d = new Date(Date.now() + k * 864e5), p = dayPlan(d); if (p) return {p, d}; } return null; };
+const planKg = r => { const m = String(r || "").match(/@\s*([\d.]+)\s*kg/i); return m ? +m[1] : null; };
+const roundTo = (v, st) => Math.round(v / st) * st;
+const isBarbellMain = ex => /bench press|squat|deadlift|overhead press|clean|\brdl\b/i.test(ex) && !/belt|dumbbell|smith|pendulum|hack|split|goblet|machine|\bdb\b/i.test(ex);
+function targetFor(p, i){
+  const it = p.items[i], rr = range2(String(it.reps).replace(/@.*$/, "")) || [null, null], ns = (range2(it.sets) || [3])[0];
+  const pk = planKg(it.reps);
+  const prev = wsess.filter(r => r.wid === p.id).sort((a, b) => b.start - a.start)[0];
+  const li = prev && prev.items.find(x => x.ex === it.ex);
+  const W = li ? working(li.sets).filter(x => !x.bw && x.kg) : [];
+  if (!W.length) return pk ? {kg: pk, reps: rr[0], why: "starting weight"} : {kg: null, reps: rr[0], why: defaultBW(it.ex) ? "" : "pick a weight that leaves 1–2 reps in reserve"};
+  const top = Math.max(...W.map(x => x.kg)), atTop = W.filter(x => x.kg >= top - 0.01);
+  const hi = rr[1] || rr[0], lo = rr[0];
+  if (hi && atTop.length >= ns && atTop.every(x => x.reps >= hi)) return {kg: top + 2.5, reps: lo, why: `all ${atTop.length} sets hit ${hi}+ last time`};
+  if (lo && atTop.some(x => x.reps < lo)) return {kg: top, reps: lo, why: "repeat the weight, build the reps"};
+  return {kg: top, reps: hi || lo, why: "same weight, aim for one more rep"};
+}
+function warmups(ex, kg){
+  if (!kg || kg < 40 || !isBarbellMain(ex)) return [];
+  const out = [{kg: 20, reps: 8}];
+  [[0.5, 5], [0.7, 3], [0.85, 1]].forEach(([f, r]) => { const w = roundTo(kg * f, 2.5); if (w > out[out.length-1].kg && w < kg) out.push({kg: w, reps: r}); });
+  return out;
+}
+function todayCard(){
+  if (active || builder) return "";
+  const p = dayPlan(), today = iso(new Date());
+  if (!p) {
+    const n = nextDayPlan();
+    return `<section class="card sesscard" style="gap:8px"><span class="wid" style="justify-self:start">${DAYS[new Date().getDay()]}</span><h2>Rest day</h2>
+      <div class="hint">Recover. An easy 30–45 min walk, ride or swim is fine, nothing hard.${n ? ` Next: <b style="color:var(--ink)">${esc(n.p.name)}</b> on ${DAYS[n.d.getDay()]}.` : ""}</div></section>`;
+  }
+  const done = wsess.filter(r => r.date === today && r.wid === p.id).sort((a, b) => b.start - a.start)[0];
+  if (done) { const S = summarize(done.items), n = nextDayPlan();
+    return `<section class="card sesscard" style="gap:8px"><span class="wid" style="justify-self:start">${esc(p.id)}</span><h2>Done for today</h2>
+      <div class="hint">${esc(p.name)} · ${num(S.vol)} kg · ${S.sets} working sets · ${mins(done.end - done.start)} min</div>
+      <button class="ghost" data-act="view" data-sid="${done.id}" style="justify-self:start">See the review</button>
+      ${n ? `<div class="hint">Next: <b style="color:var(--ink)">${esc(n.p.name)}</b> on ${DAYS[n.d.getDay()]}.</div>` : ""}</section>`; }
+  const c = cueFor(p.name), todayCue = c ? Object.entries(c).find(([k]) => /today/i.test(k)) : null;
+  let mins_ = 0;
+  const rows = p.items.map((it, i) => {
+    const t = targetFor(p, i), ns = (range2(it.sets) || [3])[0], wu = warmups(it.ex, t.kg), L = libEx(it.ex);
+    mins_ += ns * (restFor({ex: it.ex, bw: defaultBW(it.ex)}) / 60 + 1) + wu.length * 1.5;
+    const repsTxt = String(it.reps).replace(/\s*@.*$/, "");
+    return `<li><span class="n">${i+1}</span><span class="x">${esc(it.ex)}<div class="hint" style="font-weight:400">${wu.length ? `Warm up ${wu.map(w => `${num(w.kg)}×${w.reps}`).join(", ")}. ` : ""}${t.why ? esc(t.why[0].toUpperCase() + t.why.slice(1)) + "." : ""}</div></span>
+      <span class="r"><b>${esc(it.sets)}</b> × ${esc(repsTxt)}${t.kg ? `<br><b>${num(t.kg)} kg${isPerHand(it.ex) ? "/hand" : ""}</b>` : ""}</span></li>`;
+  }).join("");
+  return `<section class="card sesscard" style="gap:6px">
+    <div class="wh"><div><span class="wid">${esc(p.id)} · ${DAYS[new Date().getDay()]}</span><h2 style="margin-top:6px">${esc(p.name.replace(/^\w+:\s*/, ""))}</h2>
+      <div class="meta">${p.items.length} exercises · about ${Math.round(mins_ / 5) * 5} min</div></div></div>
+    ${todayCue ? `<div class="note" style="margin-top:4px">${todayCue[1].map(esc).join(" ")}</div>` : ""}
+    <ol class="steps" style="margin-top:4px">${rows}</ol>
+    <button class="primary startbtn" data-act="start" data-pid="${esc(p.id)}">Start today's workout</button>
+  </section>`;
+}
 function startWorkout(pid){
   if (active) { setTab("lifts"); return; }
   const p = pid ? allPlans().find(x => x.id === pid) : null;
   liftView = "train"; store.set("gl-liftview", "train");
-  active = {id: "s" + Date.now().toString(36), name: p ? p.name : "Workout", wid: p ? p.id : null, start: Date.now(), items: p ? p.items.map(i => mkItem(i.ex, {sets:i.sets, reps:i.reps})) : [], cardio: []};
+  active = {id: "s" + Date.now().toString(36), name: p ? p.name : "Workout", wid: p ? p.id : null, start: Date.now(), items: p ? p.items.map((i, k) => {
+    const it = mkItem(i.ex, {sets:i.sets, reps:i.reps}), t = targetFor(p, k), ns = (range2(i.sets) || [3])[0];
+    if (t.kg || t.reps) it.queue = [...warmups(i.ex, t.kg).map(w => ({...w, wu: true})), ...Array.from({length: ns}, () => ({kg: t.kg, reps: t.reps}))];
+    it.why = t.why; return it; }) : [], cardio: []};
   saveActive(); viewSid = null; builder = null; setTab("lifts"); scrollTo(0, 0);
 }
 
@@ -1101,7 +1162,8 @@ function renderActive(){
       }
       const lt = lastTop(it.ex), lastHere = it.sets[it.sets.length-1], ls = lastSess(it.ex), nx = it.sets.length;
       const ghost = ls && ls.sets[nx];
-      const pre = ghost && (it.bw || !ghost.bw) ? ghost : (lastHere || (lt && !lt.bw ? lt : null));
+      const qn = it.queue && it.queue[nx];
+      const pre = qn && (qn.kg || it.bw) ? qn : ghost && (it.bw || !ghost.bw) ? ghost : (lastHere || (lt && !lt.bw ? lt : null));
       const f = wuFlags(it.sets); let wn = 0;
       const known = !!libEx(it.ex);
       return `<div class="sx">
@@ -1120,7 +1182,9 @@ function renderActive(){
           <div class="field"><label for="erir">RIR</label><select id="erir">${["","0","1","2","3","4"].map(v => `<option value="${v}" ${String(x.rir ?? "") === v ? "selected" : ""}>${v === "" ? "–" : v === "4" ? "4+" : v}</option>`).join("")}</select></div>
           <div class="acts"><label class="sx-tools"><input type="checkbox" id="ewu" ${f[active.edit.j] ? "checked" : ""}> Warm-up</label><span style="flex:1"></span>
             <button class="linkbtn" data-act="sdel" data-i="${i}" data-j="${active.edit.j}">Delete</button><button class="ghost" data-act="ecancel">Cancel</button><button class="ghost" data-act="esave" data-i="${i}">Save</button></div></div>`; })() : ""}
-        ${ghost ? `<div class="hint">Set ${nx + 1} last time: ${fmtSet(ghost)}</div>` : ""}
+        ${qn ? (() => { const wuN = it.queue.filter(x => x.wu).length, isWu = !!qn.wu, k = isWu ? nx + 1 : nx - wuN + 1, of = isWu ? wuN : it.queue.length - wuN;
+            return `<div class="hint" style="color:var(--ink)"><b>Next: ${isWu ? "warm-up" : "working set"} ${k} of ${of}</b>${qn.kg ? ` · ${num(qn.kg)} kg` : ""}${qn.reps ? ` × ${qn.reps}` : ""}${!isWu && k === 1 && it.why ? ` · ${esc(it.why)}` : ""}</div>`; })()
+          : ghost ? `<div class="hint">Set ${nx + 1} last time: ${fmtSet(ghost)}</div>` : ""}
         <div class="addrow r4"><input id="sk-${i}" type="number" inputmode="decimal" step="0.5" min="0" placeholder="${it.bw ? "BW" : it.ph ? "kg/hand" : "kg"}" ${it.bw ? "disabled" : ""} value="${!it.bw && pre && pre.kg ? pre.kg : ""}" aria-label="Weight kg">
           <input id="sr-${i}" type="number" inputmode="numeric" step="1" min="1" placeholder="reps" value="${pre ? pre.reps : ""}" aria-label="Reps">
           <select id="sq-${i}" aria-label="Reps left in the tank (optional)"><option value="">RIR</option>${["0","1","2","3","4"].map(v => `<option value="${v}">${v === "4" ? "4+" : v}</option>`).join("")}</select>
@@ -1156,8 +1220,9 @@ function syncBuilder(){
 
 function renderStart(){
   const ps = allPlans();
-  return `<section class="card sesscard" style="gap:10px"><h2>Start a workout</h2>
-    <button class="primary" data-act="start">Empty workout</button>
+  const tp = dayPlan();
+  return `<section class="card sesscard" style="gap:10px"><h2>${tp ? "Something else" : "Start a workout"}</h2>
+    <button class="${tp ? "ghost" : "primary"}" data-act="start">Empty workout</button>
     <div class="hint">Or start from a plan</div>
     <div class="planchips">${ps.map(p => `<button class="chip" data-act="start" data-pid="${esc(p.id)}">${esc(p.id)} ${esc(p.name)}</button>`).join("")}</div>
     <button class="linkbtn" style="justify-self:start" data-act="bnew">+ Create a plan</button>
@@ -1173,7 +1238,7 @@ function renderSess(){
   if (v) return backupBanner() + renderSummary(v);
   if (active) return renderActive();
   if (builder) return renderBuilder();
-  return backupBanner() + renderStart() + renderRecent();
+  return backupBanner() + todayCard() + renderStart() + renderRecent();
 }
 
 let swatch = setInterval(() => { const t = document.getElementById("stimer"); if (t && active) t.textContent = elapsed(Date.now() - active.start); }, 1000);
@@ -1192,9 +1257,10 @@ function sessClick(e){
     active.items.forEach((o, j) => { if (j !== i && o.sets.length && !o.closed) { if (o.seg) { o.acc = (o.acc || 0) + now - o.seg; o.seg = null; } o.closed = true; } });
     it.closed = false; if (!it.seg) it.seg = now;
     const rq = document.getElementById("sq-" + i).value;
-    it.sets.push({kg: it.bw ? null : kg, reps, bw: it.bw, ph: !it.bw && !!it.ph, ts: now, ...(rq !== "" ? {rir: +rq} : {})});
+    const qn = it.queue && it.queue[it.sets.length];
+    it.sets.push({kg: it.bw ? null : kg, reps, bw: it.bw, ph: !it.bw && !!it.ph, ts: now, ...(rq !== "" ? {rir: +rq} : {}), ...(qn && qn.wu && Math.abs(qn.kg - kg) < 0.01 ? {wu: true} : {})});
     primeAudio(); keepAwake(true);
-    const dur = restFor(it); active.rest = {ex: it.ex, dur, end: now + dur * 1000};
+    const dur = qn && qn.wu ? 60 : restFor(it); active.rest = {ex: it.ex, dur, end: now + dur * 1000};
     active.edit = null; saveActive(); render(); tickRest();
   }
   else if (act === "sreopen") { active.items[i].closed = false; saveActive(); render(); setTimeout(() => document.getElementById("sr-" + i)?.scrollIntoView({block:"center"}), 0); }
@@ -1502,6 +1568,7 @@ if (!FRIENDS && !store.get("gl-mig-2")) {
     store.set("gl-mig-2", "1");
   } catch(e) {}
 }
+if (openToday && (active || dayPlan())) { tab = "lifts"; liftView = "train"; }
 render();
 async function doRefresh(){
   try { const r = await navigator.serviceWorker?.getRegistration(); await r?.update(); } catch(err) {}
