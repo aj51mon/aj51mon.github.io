@@ -934,10 +934,10 @@ function summarize(items){
 }
 const setsTxt = p => p.sets.map((x, k) => (p.flags[k] ? "W " : "") + fmtSet(x) + rirTxt(x)).join(" · ");
 
-function finishWorkout(){
+function finishWorkout(endAt){
   const done = active.items.filter(it => it.sets.length), cardio = active.cardio || [];
   if (!done.length && !cardio.length) return "Log at least one set or cardio piece, or tap Discard.";
-  const end = Date.now(), date = iso(new Date(active.start));
+  const end = endAt || Date.now(), date = iso(new Date(active.start));
   const pbs = [];
   done.forEach(it => {
     if (it.sets.every(x => x.bw)) return;
@@ -1085,9 +1085,13 @@ function renderSummary(rec){
   </section>`;
 }
 
+function lastActivity(a){ let t = a.start; a.items.forEach(it => it.sets.forEach(x => { if (x.ts && x.ts > t) t = x.ts; })); (a.cardio || []).forEach(c => { if (c.ts && c.ts > t) t = c.ts; }); return t; }
 function renderActive(){
-  const a = active;
-  return `<section class="card sesscard">
+  const a = active, idle = Date.now() - lastActivity(a);
+  const stale = idle > 4 * 3600e3 && a.items.some(it => it.sets.length);
+  return `${stale ? `<section class="banner" style="margin-bottom:10px"><div><b>Still training?</b><span class="hint">This workout has been open ${Math.floor(idle / 3600e3)} h since your last set (${clock(lastActivity(a))}).</span></div>
+      <div style="display:grid;gap:6px"><button class="ghost" data-act="endlast">End at last set</button><button class="linkbtn" data-act="keepgoing">Keep going</button></div></section>` : ""}
+  <section class="card sesscard">
     <div class="wh"><div>${a.wid ? `<span class="wid">${esc(a.wid)}</span>` : ""}<h2 style="margin-top:6px">${esc(a.name)}<span class="live">Live</span></h2><div class="meta">Started ${clock(a.start)}</div></div>
       <span class="timer" id="stimer">${elapsed(Date.now() - a.start)}</span></div>
     ${a.items.map((it, i) => {
@@ -1196,7 +1200,7 @@ function sessClick(e){
   else if (act === "sreopen") { active.items[i].closed = false; saveActive(); render(); setTimeout(() => document.getElementById("sr-" + i)?.scrollIntoView({block:"center"}), 0); }
   else if (act === "acopen") { active.cform = true; saveActive(); render(); }
   else if (act === "acancel") { active.cform = false; saveActive(); render(); }
-  else if (act === "acsave") { const c = readCardio("ac"); if (!c) return; active.cardio = active.cardio || []; active.cardio.push(c); active.cform = false; saveActive(); render(); }
+  else if (act === "acsave") { const c = readCardio("ac"); if (!c) return; active.cardio = active.cardio || []; c.ts = Date.now(); active.cardio.push(c); active.cform = false; saveActive(); render(); }
   else if (act === "acdel") { active.cardio.splice(+b.dataset.k, 1); saveActive(); render(); }
   else if (act === "copysum") {
     const rec = wsess.find(x => x.id === b.dataset.sid), txt = summaryText(rec), m = document.getElementById("copymsg");
@@ -1225,6 +1229,8 @@ function sessClick(e){
   }
   else if (act === "discard") { if (!arm("Tap again to discard")) return; active = null; saveActive(); keepAwake(false); render(); tickRest(); }
   else if (act === "export") { doExport(); }
+  else if (act === "endlast") { const t = lastActivity(active) + 3 * 60e3; active.items.forEach(it => { if (it.seg && it.seg > t) it.seg = t; }); const err = finishWorkout(t); if (err) return smsg(err); keepAwake(false); active && (active.rest = null); render(); tickRest(); scrollTo(0, 0); }
+  else if (act === "keepgoing") { active.items.forEach(it => { if (it.sets.length) it.sets[it.sets.length-1].ts = Date.now(); }); saveActive(); render(); }
   else if (act === "finish") { const err = finishWorkout(); if (err) return smsg(err); keepAwake(false); render(); tickRest(); scrollTo(0, 0); }
   else if (act === "closeview") { viewSid = null; render(); }
   else if (act === "view") { viewSid = b.dataset.sid; justDone = null; render(); scrollTo(0, 0); }
@@ -1476,6 +1482,24 @@ if (!FRIENDS && !store.get("gl-mig-1")) {
     if (!prmap["back squat"]) prmap["back squat"] = {kg: 140, reps: 1};
     saveLog(); wr(SKEY, wsess); wr(HKEY, phmap); savePrior();
     store.set("gl-mig-1", "1");
+  } catch(e) {}
+}
+/* One-time fixes agreed 3 Nov 2026: supine press per hand, barbell curl was dumbbell curl, typo names, 24 Oct session left open. */
+if (!FRIENDS && !store.get("gl-mig-2")) {
+  try {
+    const sp = wsess.find(r => r.id === "smvbwfqb5");
+    log.forEach(l => { if (l.ex === "Supine press" && l.date === "2026-10-17" && !l.ph) { l.kg = l.kg / 2; l.ph = true; } });
+    if (sp) sp.items.forEach(it => { if (it.ex === "Supine press") it.sets.forEach(x => { if (!x.ph) { x.kg = x.kg / 2; x.ph = true; } }); });
+    phmap["supine press"] = true;
+    [["Barbell Curl","Dumbbell Curl"],["Weighted cruches","Weighted Crunch"],["Incline Dumbell press","Incline Dumbbell Press"]].forEach(([f, t]) => {
+      if (log.some(l => l.ex === f) || wsess.some(r => r.items.some(i => i.ex === f)) || plans.some(p => p.items.some(i => i.ex === f))) renameExercise(f, t); });
+    log.forEach(l => { if (l.ex === "Dumbbell Curl" && !l.bw) l.ph = true; });
+    wsess.forEach(r => r.items.forEach(it => { if (it.ex === "Dumbbell Curl") it.sets.forEach(x => { if (!x.bw) x.ph = true; }); }));
+    wsess.forEach(r => { if (r.end - r.start > 4 * 3600e3) {
+      r.items.forEach(it => { if ((it.dur || 0) > 3 * 3600e3) it.dur = Math.max(2, it.sets.length * 2) * 60e3; });
+      r.end = r.start + Math.max(20 * 60e3, r.items.reduce((a, it) => a + (it.dur || 0), 0)); } });
+    saveLog(); wr(SKEY, wsess); wr(HKEY, phmap);
+    store.set("gl-mig-2", "1");
   } catch(e) {}
 }
 render();
