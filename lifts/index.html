@@ -419,7 +419,10 @@ const METRICS = {
   e1rm:  {label:"Est. 1RM", unit:"kg",  f:s => Math.max(...s.sets.map(x => x.reps === 1 ? x.kg : x.kg * (1 + x.reps / 30)))},
   vol:   {label:"Volume", unit:"kg",    f:s => working(s.sets).reduce((a, x) => a + x.kg * x.reps * (x.ph ? 2 : 1), 0)},
   best:  {label:"Best set", unit:"reps", f:s => Math.max(...s.sets.map(x => x.reps))},
-  total: {label:"Total reps", unit:"reps", f:s => working(s.sets).reduce((a, x) => a + x.reps, 0)}
+  total: {label:"Total reps", unit:"reps", f:s => working(s.sets).reduce((a, x) => a + x.reps, 0)},
+  cload: {label:"Heaviest load", unit:"kg", f:s => Math.max(...s.sets.map(x => x.kg || 0))},
+  cdist: {label:"Total distance", unit:"m", f:s => s.sets.reduce((a, x) => a + (x.dist || 0), 0)},
+  cwork: {label:"Load × distance", unit:"kg·m", f:s => s.sets.reduce((a, x) => a + (x.kg || 0) * (x.dist || 0) * (x.ph ? 2 : 1), 0)}
 };
 /* Bodyweight log + strength tiers (male, estimated 1RM ÷ bodyweight; approximate) */
 const BKEY = "gl-bw-v1";
@@ -463,11 +466,11 @@ function rankOf(ex){
 }
 METRICS.ratio = {label:"× Bodyweight", unit:"× BW", f:s => { const b = bwAt(s.d); return b ? Math.max(...s.sets.map(e1)) / b : NaN; }};
 
-const EXDB_RAW = "Barbell Bench Press|Chest|Shoulders,Arms||bench press;flat bench;bench;bb bench press\nPaused Bench Press|Chest|Shoulders,Arms||pause bench\nIncline Barbell Bench Press|Chest|Shoulders,Arms||incline bench press;incline barbell press;incline bench\nDecline Barbell Bench Press|Chest|Arms||decline bench press;decline bench\nClose-Grip Bench Press|Arms|Chest,Shoulders||close grip bench\nFloor Press|Chest|Arms||\nDumbbell Bench Press|Chest|Shoulders,Arms|p|db bench press;dumbbell press;flat dumbbell press\nIncline Dumbbell Press|Chest|Shoulders,Arms|p|incline db press;incline dumbbell bench press\nDecline Dumbbell Press|Chest|Arms|p|\nSmith Machine Bench Press|Chest|Shoulders,Arms||smith bench\nSmith Machine Incline Press|Chest|Shoulders,Arms||smith incline\nMachine Chest Press|Chest|Shoulders,Arms||chest press;seated chest press\nSupine Chest Press|Chest|Shoulders,Arms||supine press\nIncline Machine Press|Chest|Shoulders,Arms||incline chest press\nDumbbell Fly|Chest||pi|db fly;flat fly\nIncline Dumbbell Fly|Chest||pi|incline fly\nCable Fly|Chest||i|cable crossover;cable flye\nLow-to-High Cable Fly|Chest|Shoulders|i|low to high fly\nHigh-to-Low Cable Fly|Chest||i|high to low fly\nPec Deck|Chest||i|machine fly;pec fly\nPush-Up|Chest|Shoulders,Arms|b|pushup;press up\nWeighted Push-Up|Chest|Shoulders,Arms||\nDips|Chest|Arms,Shoulders|b|dip;chest dip;parallel bar dip\nWeighted Dips|Chest|Arms,Shoulders||weighted dip\nDeadlift|Back|Glutes,Legs||conventional deadlift;barbell deadlift\nSumo Deadlift|Legs|Glutes,Back||\nTrap Bar Deadlift|Legs|Glutes,Back||hex bar deadlift\nRomanian Deadlift|Legs|Glutes,Back||rdl;barbell rdl;barbell romanian deadlift;barbell romanian deadlifts (rdls)\nDumbbell Romanian Deadlift|Legs|Glutes,Back|p|db rdl\nStiff-Leg Deadlift|Legs|Glutes,Back||stiff leg deadlift;sldl\nSingle-Leg Romanian Deadlift|Legs|Glutes|p|single leg rdl\nRack Pull|Back|Glutes,Legs||\nGood Morning|Legs|Glutes,Back||\nBarbell Row|Back|Arms,Shoulders||bent over row;bent-over barbell row;bb row\nPendlay Row|Back|Arms||\nDumbbell Row|Back|Arms|p|single arm row;one arm row;db row;one-arm dumbbell row;single arm dumbbell row\nChest-Supported Dumbbell Row|Back|Arms,Shoulders|p|chest supported row;incline db row\nT-Bar Row|Back|Arms,Shoulders||tbar row\nSeal Row|Back|Arms||\nSeated Cable Row|Back|Arms||cable row;seated row\nMachine Low Row|Back|Arms||low row;machine row low\nMachine Row|Back|Arms||chest supported machine row;hammer strength row\nMeadows Row|Back|Arms|p|\nLat Pulldown|Back|Arms||lat pull down;pull down;pulldown;lat pull-down;wide grip pulldown\nClose-Grip Lat Pulldown|Back|Arms||close grip pulldown;v bar pulldown\nSingle-Arm Lat Pulldown|Back|Arms|p|single arm pulldown\nStraight-Arm Pulldown|Back||i|straight arm pulldown;lat prayer\nPull-Up|Back|Arms|b|pullup;pull up;pull-ups\nChin-Up|Back|Arms|b|chinup;chin up;chin-ups\nWeighted Pull-Up|Back|Arms||weighted pullup\nWeighted Chin-Up|Back|Arms||\nAssisted Pull-Up|Back|Arms||assisted pullup\nInverted Row|Back|Arms|b|bodyweight row;australian pull up\nBack Extension|Back|Glutes,Legs|b|hyperextension;45 degree back extension\nReverse Hyper|Glutes|Back,Legs||\nBarbell Shrug|Back||i|shrug\nDumbbell Shrug|Back||pi|db shrug\nOverhead Press|Shoulders|Arms||ohp;military press;standing overhead press;barbell overhead press;barbell shoulder press;strict press\nSeated Barbell Overhead Press|Shoulders|Arms||seated overhead press;seated barbell press;seated overhead barbell press\nPush Press|Shoulders|Arms,Legs|y|\nDumbbell Shoulder Press|Shoulders|Arms|p|db shoulder press;dumbbell overhead press\nSeated Dumbbell Shoulder Press|Shoulders|Arms|p|seated db press\nArnold Press|Shoulders|Arms|p|\nMachine Shoulder Press|Shoulders|Arms||shoulder press machine\nLandmine Press|Shoulders|Chest,Arms||\nDumbbell Lateral Raise|Shoulders||pi|lateral raise;side raise;db lateral raise;lat raise\nCable Lateral Raise|Shoulders||pi|\nMachine Lateral Raise|Shoulders||i|\nFront Raise|Shoulders||pi|\nRear Delt Fly|Shoulders|Back|pi|reverse fly;rear delt raise\nReverse Pec Deck|Shoulders|Back|i|rear delt machine\nFace Pull|Shoulders|Back|i|face pulls\nUpright Row|Shoulders|Back|i|\nBarbell Curl|Arms||i|bb curl;bicep curl barbell\nEZ-Bar Curl|Arms||i|ez bar curl\nDumbbell Curl|Arms||pi|db curl;dumbbell curls;bicep curl;biceps curl;dumbbell bicep curl;single arm dumbbell curl;alternating dumbbell curl\nHammer Curl|Arms||pi|\nIncline Dumbbell Curl|Arms||pi|incline curl\nPreacher Curl|Arms||i|ez preacher curl\nDumbbell Preacher Curl|Arms||pi|\nCable Curl|Arms||i|cable curls;cable bicep curl\nBayesian Cable Curl|Arms||pi|bayesian curl\nConcentration Curl|Arms||pi|\nSpider Curl|Arms||i|\nMachine Curl|Arms||i|\nReverse Curl|Arms||i|\nWrist Curl|Arms||i|\nTricep Pushdown|Arms||i|tricep push down;tricep push downs;tricep pull down;tricep pull downs;triceps pushdown;cable pushdown\nRope Pushdown|Arms||i|rope tricep pushdown\nSingle-Arm Cable Pushdown|Arms||pi|\nOverhead Cable Tricep Extension|Arms||i|overhead cable extension;cable overhead extension\nOverhead Dumbbell Tricep Extension|Arms||i|overhead db extension;overhead tricep extension\nSkull Crusher|Arms||i|skullcrusher;lying tricep extension\nDumbbell Skull Crusher|Arms||pi|\nTricep Kickback|Arms||pi|kickback\nMachine Tricep Extension|Arms||i|tricep extension machine\nJM Press|Arms|Chest||\nBench Dip|Arms|Chest|b|bench dips\nBack Squat|Legs|Glutes||squat;barbell squat;back squats;high bar squat\nLow-Bar Back Squat|Legs|Glutes,Back||low bar squat\nPause Squat|Legs|Glutes||paused squat\nFront Squat|Legs|Glutes,Core||\nSafety Bar Squat|Legs|Glutes,Back||ssb squat;safety squat bar\nBox Squat|Legs|Glutes||\nGoblet Squat|Legs|Glutes||\nZercher Squat|Legs|Glutes,Back||\nHack Squat|Legs|Glutes||\nPendulum Squat|Legs|Glutes||pendulum squats\nBelt Squat|Legs|Glutes||\nSmith Machine Squat|Legs|Glutes||smith squat\nLeg Press|Legs|Glutes||\nBulgarian Split Squat|Legs|Glutes||rear foot elevated split squat;bss\nSplit Squat|Legs|Glutes||\nWalking Lunge|Legs|Glutes||walking lunges;dumbbell walking lunge;dumbbell walking lunges\nReverse Lunge|Legs|Glutes||\nStep-Up|Legs|Glutes||step up\nLeg Extension|Legs||i|leg extensions;quad extension\nLying Leg Curl|Legs||i|leg curl;hamstring curl\nSeated Leg Curl|Legs||i|\nNordic Hamstring Curl|Legs||b|nordic curl;nordics;nordic ham curls\nHip Adduction|Legs||i|adductor machine\nSissy Squat|Legs||bi|\nBarbell Hip Thrust|Glutes|Legs||hip thrust\nMachine Hip Thrust|Glutes|Legs||\nGlute Bridge|Glutes|Legs||\nCable Kickback|Glutes||pi|glute kickback\nHip Abduction|Glutes||i|abductor machine\nCable Pull-Through|Glutes|Legs||pull through\nStanding Calf Raise|Calves||i|calf raise\nSeated Calf Raise|Calves||i|\nLeg Press Calf Raise|Calves||i|\nSingle-Leg Calf Raise|Calves||bi|\nPlank|Core||bi|\nSide Plank|Core||bi|\nHanging Leg Raise|Core||bi|leg raise\nHanging Knee Raise|Core||bi|knee raise\nCable Crunch|Core||i|kneeling cable crunch\nWeighted Crunch|Core||i|weighted crunches;weighted cruches;machine crunch\nCrunch|Core||bi|crunches\nSit-Up|Core||b|situp;sit up\nDecline Sit-Up|Core||b|\nAb Wheel Rollout|Core||b|ab wheel;rollout\nRussian Twist|Core||i|\nPallof Press|Core||i|\nDead Bug|Core||b|\nFarmer's Carry|Full Body|Arms,Core|p|farmers walk;farmer carry\nSuitcase Carry|Core|Arms|p|\nTurkish Get-Up|Full Body|Core,Shoulders|p|tgu\nPower Clean|Full Body|Legs,Back|y|\nHang Power Clean|Full Body|Legs,Back|y|hang clean\nClean and Jerk|Full Body|Legs,Shoulders|y|\nPower Snatch|Full Body|Legs,Shoulders|y|snatch\nPush Jerk|Shoulders|Legs|y|\nKettlebell Swing|Glutes|Legs,Back|y|kb swing\nMedicine Ball Slam|Full Body|Core|y|med ball slam;ball slam\nRotational Med Ball Throw|Core|Shoulders|y|med ball throw\nMed Ball Chest Pass|Chest|Arms|y|\nBox Jump|Legs|Glutes|by|box jumps\nBroad Jump|Legs|Glutes|by|standing long jump\nVertical Jump|Legs|Glutes,Calves|by|vertical jumps\nJump Squat|Legs|Glutes|by|jump squats;squat jump\nTrap Bar Jump|Legs|Glutes|y|\nDepth Jump|Legs|Calves|by|drop jump\nTuck Jump|Legs||by|\nPogo Hops|Calves|Legs|by|pogo jumps\nSkater Jump|Glutes|Legs|by|skater jumps;skaters\nSplit Squat Jump|Legs|Glutes|by|split squat jumps;jumping lunge\nSingle-Leg Hop|Legs|Calves|by|single-leg hops;single leg hops\nBurpee|Full Body||b|burpees\nJumping Jacks|Full Body||b|jumping jack;star jumps\nMountain Climber|Core||b|mountain climbers\nHigh Knees|Legs||b|running in place / high knees\nSled Push|Legs|Glutes||prowler push\nSled Pull|Legs|Back||\nBattle Ropes|Full Body||b|";
+const EXDB_RAW = "Barbell Bench Press|Chest|Shoulders,Arms||bench press;flat bench;bench;bb bench press\nPaused Bench Press|Chest|Shoulders,Arms||pause bench\nIncline Barbell Bench Press|Chest|Shoulders,Arms||incline bench press;incline barbell press;incline bench\nDecline Barbell Bench Press|Chest|Arms||decline bench press;decline bench\nClose-Grip Bench Press|Arms|Chest,Shoulders||close grip bench\nFloor Press|Chest|Arms||\nDumbbell Bench Press|Chest|Shoulders,Arms|p|db bench press;dumbbell press;flat dumbbell press\nIncline Dumbbell Press|Chest|Shoulders,Arms|p|incline db press;incline dumbbell bench press\nDecline Dumbbell Press|Chest|Arms|p|\nSmith Machine Bench Press|Chest|Shoulders,Arms||smith bench\nSmith Machine Incline Press|Chest|Shoulders,Arms||smith incline\nMachine Chest Press|Chest|Shoulders,Arms||chest press;seated chest press\nSupine Chest Press|Chest|Shoulders,Arms||supine press\nIncline Machine Press|Chest|Shoulders,Arms||incline chest press\nDumbbell Fly|Chest||pi|db fly;flat fly\nIncline Dumbbell Fly|Chest||pi|incline fly\nCable Fly|Chest||i|cable crossover;cable flye\nLow-to-High Cable Fly|Chest|Shoulders|i|low to high fly\nHigh-to-Low Cable Fly|Chest||i|high to low fly\nPec Deck|Chest||i|machine fly;pec fly\nPush-Up|Chest|Shoulders,Arms|b|pushup;press up\nWeighted Push-Up|Chest|Shoulders,Arms||\nDips|Chest|Arms,Shoulders|b|dip;chest dip;parallel bar dip\nWeighted Dips|Chest|Arms,Shoulders||weighted dip\nDeadlift|Back|Glutes,Legs||conventional deadlift;barbell deadlift\nSumo Deadlift|Legs|Glutes,Back||\nTrap Bar Deadlift|Legs|Glutes,Back||hex bar deadlift\nRomanian Deadlift|Legs|Glutes,Back||rdl;barbell rdl;barbell romanian deadlift;barbell romanian deadlifts (rdls)\nDumbbell Romanian Deadlift|Legs|Glutes,Back|p|db rdl\nStiff-Leg Deadlift|Legs|Glutes,Back||stiff leg deadlift;sldl\nSingle-Leg Romanian Deadlift|Legs|Glutes|p|single leg rdl\nRack Pull|Back|Glutes,Legs||\nGood Morning|Legs|Glutes,Back||\nBarbell Row|Back|Arms,Shoulders||bent over row;bent-over barbell row;bb row\nPendlay Row|Back|Arms||\nDumbbell Row|Back|Arms|p|single arm row;one arm row;db row;one-arm dumbbell row;single arm dumbbell row\nChest-Supported Dumbbell Row|Back|Arms,Shoulders|p|chest supported row;incline db row\nT-Bar Row|Back|Arms,Shoulders||tbar row\nSeal Row|Back|Arms||\nSeated Cable Row|Back|Arms||cable row;seated row\nMachine Low Row|Back|Arms||low row;machine row low\nMachine Row|Back|Arms||chest supported machine row;hammer strength row\nMeadows Row|Back|Arms|p|\nLat Pulldown|Back|Arms||lat pull down;pull down;pulldown;lat pull-down;wide grip pulldown\nClose-Grip Lat Pulldown|Back|Arms||close grip pulldown;v bar pulldown\nSingle-Arm Lat Pulldown|Back|Arms|p|single arm pulldown\nStraight-Arm Pulldown|Back||i|straight arm pulldown;lat prayer\nPull-Up|Back|Arms|b|pullup;pull up;pull-ups\nChin-Up|Back|Arms|b|chinup;chin up;chin-ups\nWeighted Pull-Up|Back|Arms||weighted pullup\nWeighted Chin-Up|Back|Arms||\nAssisted Pull-Up|Back|Arms||assisted pullup\nInverted Row|Back|Arms|b|bodyweight row;australian pull up\nBack Extension|Back|Glutes,Legs|b|hyperextension;45 degree back extension\nReverse Hyper|Glutes|Back,Legs||\nBarbell Shrug|Back||i|shrug\nDumbbell Shrug|Back||pi|db shrug\nOverhead Press|Shoulders|Arms||ohp;military press;standing overhead press;barbell overhead press;barbell shoulder press;strict press\nSeated Barbell Overhead Press|Shoulders|Arms||seated overhead press;seated barbell press;seated overhead barbell press\nPush Press|Shoulders|Arms,Legs|y|\nDumbbell Shoulder Press|Shoulders|Arms|p|db shoulder press;dumbbell overhead press\nSeated Dumbbell Shoulder Press|Shoulders|Arms|p|seated db press\nArnold Press|Shoulders|Arms|p|\nMachine Shoulder Press|Shoulders|Arms||shoulder press machine\nLandmine Press|Shoulders|Chest,Arms||\nDumbbell Lateral Raise|Shoulders||pi|lateral raise;side raise;db lateral raise;lat raise\nCable Lateral Raise|Shoulders||pi|\nMachine Lateral Raise|Shoulders||i|\nFront Raise|Shoulders||pi|\nRear Delt Fly|Shoulders|Back|pi|reverse fly;rear delt raise\nReverse Pec Deck|Shoulders|Back|i|rear delt machine\nFace Pull|Shoulders|Back|i|face pulls\nUpright Row|Shoulders|Back|i|\nBarbell Curl|Arms||i|bb curl;bicep curl barbell\nEZ-Bar Curl|Arms||i|ez bar curl\nDumbbell Curl|Arms||pi|db curl;dumbbell curls;bicep curl;biceps curl;dumbbell bicep curl;single arm dumbbell curl;alternating dumbbell curl\nHammer Curl|Arms||pi|\nIncline Dumbbell Curl|Arms||pi|incline curl\nPreacher Curl|Arms||i|ez preacher curl\nDumbbell Preacher Curl|Arms||pi|\nCable Curl|Arms||i|cable curls;cable bicep curl\nBayesian Cable Curl|Arms||pi|bayesian curl\nConcentration Curl|Arms||pi|\nSpider Curl|Arms||i|\nMachine Curl|Arms||i|\nReverse Curl|Arms||i|\nWrist Curl|Arms||i|\nTricep Pushdown|Arms||i|tricep push down;tricep push downs;tricep pull down;tricep pull downs;triceps pushdown;cable pushdown\nRope Pushdown|Arms||i|rope tricep pushdown\nSingle-Arm Cable Pushdown|Arms||pi|\nOverhead Cable Tricep Extension|Arms||i|overhead cable extension;cable overhead extension\nOverhead Dumbbell Tricep Extension|Arms||i|overhead db extension;overhead tricep extension\nSkull Crusher|Arms||i|skullcrusher;lying tricep extension\nDumbbell Skull Crusher|Arms||pi|\nTricep Kickback|Arms||pi|kickback\nMachine Tricep Extension|Arms||i|tricep extension machine\nJM Press|Arms|Chest||\nBench Dip|Arms|Chest|b|bench dips\nBack Squat|Legs|Glutes||squat;barbell squat;back squats;high bar squat\nLow-Bar Back Squat|Legs|Glutes,Back||low bar squat\nPause Squat|Legs|Glutes||paused squat\nFront Squat|Legs|Glutes,Core||\nSafety Bar Squat|Legs|Glutes,Back||ssb squat;safety squat bar\nBox Squat|Legs|Glutes||\nGoblet Squat|Legs|Glutes||\nZercher Squat|Legs|Glutes,Back||\nHack Squat|Legs|Glutes||\nPendulum Squat|Legs|Glutes||pendulum squats\nBelt Squat|Legs|Glutes||\nSmith Machine Squat|Legs|Glutes||smith squat\nLeg Press|Legs|Glutes||\nBulgarian Split Squat|Legs|Glutes||rear foot elevated split squat;bss\nSplit Squat|Legs|Glutes||\nWalking Lunge|Legs|Glutes||walking lunges;dumbbell walking lunge;dumbbell walking lunges\nReverse Lunge|Legs|Glutes||\nStep-Up|Legs|Glutes||step up\nLeg Extension|Legs||i|leg extensions;quad extension\nLying Leg Curl|Legs||i|leg curl;hamstring curl\nSeated Leg Curl|Legs||i|\nNordic Hamstring Curl|Legs||b|nordic curl;nordics;nordic ham curls\nHip Adduction|Legs||i|adductor machine\nSissy Squat|Legs||bi|\nBarbell Hip Thrust|Glutes|Legs||hip thrust\nMachine Hip Thrust|Glutes|Legs||\nGlute Bridge|Glutes|Legs||\nCable Kickback|Glutes||pi|glute kickback\nHip Abduction|Glutes||i|abductor machine\nCable Pull-Through|Glutes|Legs||pull through\nStanding Calf Raise|Calves||i|calf raise\nSeated Calf Raise|Calves||i|\nLeg Press Calf Raise|Calves||i|\nSingle-Leg Calf Raise|Calves||bi|\nPlank|Core||bi|\nSide Plank|Core||bi|\nHanging Leg Raise|Core||bi|leg raise\nHanging Knee Raise|Core||bi|knee raise\nCable Crunch|Core||i|kneeling cable crunch\nWeighted Crunch|Core||i|weighted crunches;weighted cruches;machine crunch\nCrunch|Core||bi|crunches\nSit-Up|Core||b|situp;sit up\nDecline Sit-Up|Core||b|\nAb Wheel Rollout|Core||b|ab wheel;rollout\nRussian Twist|Core||i|\nPallof Press|Core||i|\nDead Bug|Core||b|\nFarmer's Carry|Full Body|Arms,Core|pc|farmers walk;farmer carry\nSuitcase Carry|Core|Arms|pc|\nTurkish Get-Up|Full Body|Core,Shoulders|p|tgu\nPower Clean|Full Body|Legs,Back|y|\nHang Power Clean|Full Body|Legs,Back|y|hang clean\nClean and Jerk|Full Body|Legs,Shoulders|y|\nPower Snatch|Full Body|Legs,Shoulders|y|snatch\nPush Jerk|Shoulders|Legs|y|\nKettlebell Swing|Glutes|Legs,Back|y|kb swing\nMedicine Ball Slam|Full Body|Core|y|med ball slam;ball slam\nRotational Med Ball Throw|Core|Shoulders|y|med ball throw\nMed Ball Chest Pass|Chest|Arms|y|\nBox Jump|Legs|Glutes|by|box jumps\nBroad Jump|Legs|Glutes|by|standing long jump\nVertical Jump|Legs|Glutes,Calves|by|vertical jumps\nJump Squat|Legs|Glutes|by|jump squats;squat jump\nTrap Bar Jump|Legs|Glutes|y|\nDepth Jump|Legs|Calves|by|drop jump\nTuck Jump|Legs||by|\nPogo Hops|Calves|Legs|by|pogo jumps\nSkater Jump|Glutes|Legs|by|skater jumps;skaters\nSplit Squat Jump|Legs|Glutes|by|split squat jumps;jumping lunge\nSingle-Leg Hop|Legs|Calves|by|single-leg hops;single leg hops\nBurpee|Full Body||b|burpees\nJumping Jacks|Full Body||b|jumping jack;star jumps\nMountain Climber|Core||b|mountain climbers\nHigh Knees|Legs||b|running in place / high knees\nSled Push|Legs|Glutes|c|prowler push\nSled Pull|Legs|Back|c|\nBattle Ropes|Full Body||b|";
 const normEx = s => String(s || "").toLowerCase().replace(/dumbell/g, "dumbbell").replace(/\bdb\b/g, "dumbbell").replace(/\bbb\b/g, "barbell").replace(/\btri\b/g, "tricep")
   .replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean).map(t => t.length > 3 && t.endsWith("s") && !t.endsWith("ss") ? t.slice(0, -1) : t);
 const keysOf = s => { const t = normEx(s); return [t.slice().sort().join(" "), t.join("")]; };
-const EXDB = EXDB_RAW.split("\n").map(l => { const [name, body, helpers, flags, al] = l.split("|"); return {name, body, helpers: helpers ? helpers.split(",") : [], ph: /p/.test(flags), bw: /b/.test(flags), iso: /i/.test(flags), pow: /y/.test(flags), aliases: al ? al.split(";") : []}; });
+const EXDB = EXDB_RAW.split("\n").map(l => { const [name, body, helpers, flags, al] = l.split("|"); return {name, body, helpers: helpers ? helpers.split(",") : [], ph: /p/.test(flags), bw: /b/.test(flags), iso: /i/.test(flags), pow: /y/.test(flags), carry: /c/.test(flags), aliases: al ? al.split(";") : []}; });
 const DBKEY = new Map();
 EXDB.forEach(e => [e.name, ...e.aliases].forEach(n => keysOf(n).forEach(k => { if (!DBKEY.has(k)) DBKEY.set(k, e); })));
 function lev(a, b){ if (Math.abs(a.length - b.length) > 2) return 9; const d = Array.from({length: a.length + 1}, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j;
@@ -493,6 +496,7 @@ function syncBW(){ lf("lf-kg").disabled = lf("lf-bw").checked; if (lf("lf-bw").c
 lf("lf-bw").addEventListener("change", syncBW);
 lf("lf-ex").addEventListener("change", () => {
   const v = lf("lf-ex").value.trim(), hit = exNames().find(n => n.toLowerCase() === v.toLowerCase());
+  const rl = document.querySelector('label[for="lf-reps"]'); if (rl) rl.textContent = isCarry(hit || v) ? "Distance (m)" : "Reps";
   if (hit) { lf("lf-ex").value = hit; if (log.some(l => l.ex === hit)) { lf("lf-bw").checked = isBW(hit); syncBW(); } }
 });
 function msg(t, err){ lf("lf-msg").textContent = t; lf("lf-msg").classList.toggle("err", !!err); }
@@ -500,12 +504,12 @@ lf("lf-add").addEventListener("click", () => {
   let ex = lf("lf-ex").value.trim();
   const bw = lf("lf-bw").checked, kg = parseFloat(lf("lf-kg").value), reps = parseInt(lf("lf-reps").value, 10), date = lf("lf-date").value || iso(new Date());
   if (!ex) return msg("Enter an exercise name.", true);
-  if (!(reps >= 1)) return msg("Enter the number of reps (1 or more).", true);
+  if (!(reps >= 1)) return msg(isCarry(ex) ? "Enter the distance in metres." : "Enter the number of reps (1 or more).", true);
   if (!bw && !(kg > 0)) return msg("Enter the weight in kg, or tick Bodyweight.", true);
   ex = exNames().find(n => n.toLowerCase() === ex.toLowerCase()) || (ex === ex.toLowerCase() ? ex.replace(/\b\w/g, c => c.toUpperCase()) : ex);
-  log.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), ex, date, kg: bw ? null : kg, reps, bw});
+  log.push(isCarry(ex) && !bw ? {id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), ex, date, kg, reps: 1, dist: reps, carry: true, bw: false, ph: isPerHand(ex)} : {id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), ex, date, kg: bw ? null : kg, reps, bw});
   if (!saveLog()) { log.pop(); return msg("Couldn't save on this phone. Check storage isn't full or blocked.", true); }
-  msg(`Added ${ex}: ${bw ? reps + " reps" : num(kg) + " kg × " + reps}`);
+  msg(`Added ${ex}: ${fmtSet(log[log.length-1])}`);
   openEx = ex; store.set("openEx", ex);
   if (!metricSel[ex]) metricSel[ex] = bw ? "best" : "e1rm";
   render();
@@ -552,12 +556,12 @@ function rankPanel(ex){
 
 function liftCard(ex){
   const ss = sessions(ex), bw = isBW(ex), last = ss[ss.length-1];
-  const fmtSet = x => x.bw ? `${x.reps} reps` : `${num(x.kg)} × ${x.reps}`;
-  const bestLast = bw ? Math.max(...last.sets.map(x => x.reps)) + " reps" : (() => { const b = last.sets.reduce((a, x) => x.kg > a.kg || (x.kg === a.kg && x.reps > a.reps) ? x : a); return `${num(b.kg)} kg × ${b.reps}`; })();
+  const fmtSet = x => x.carry ? `${num(x.kg)} kg × ${Math.round(x.dist || 0)} m` : x.bw ? `${x.reps} reps` : `${num(x.kg)} × ${x.reps}`;
+  const bestLast = last.sets.some(x => x.carry) ? (() => { const b = last.sets.reduce((a, x) => (x.kg || 0) > (a.kg || 0) ? x : a); return fmtSet(b); })() : bw ? Math.max(...last.sets.map(x => x.reps)) + " reps" : (() => { const b = last.sets.reduce((a, x) => x.kg > a.kg || (x.kg === a.kg && x.reps > a.reps) ? x : a); return `${num(b.kg)} kg × ${b.reps}`; })();
   const open = openEx === ex;
   let body = "";
   if (open) {
-    const ms = bw ? ["best","total"] : ["top","e1rm","vol","ratio"];
+    const carry = ss.some(s2 => s2.sets.some(x => x.carry)), ms = carry ? ["cload","cdist","cwork"] : bw ? ["best","total"] : ["top","e1rm","vol","ratio"];
     let m = metricSel[ex]; if (!ms.includes(m)) m = metricSel[ex] = ms[bw ? 0 : 1];
     const cut = RANGES[range] ? iso(new Date(Date.now() - RANGES[range] * 864e5)) : "0000";
     const inR = ss.filter(s => s.d >= cut).map(s => ({d:s.d, v:METRICS[m].f(s)})).filter(p => isFinite(p.v));
@@ -579,7 +583,7 @@ function liftCard(ex){
         return chartSVG(inR, unit, false, {second: act, ref: prE ? {v: prE, label: `Pre-app best ${num(prE)}`} : null}) + `<div class="legend"><span><i></i>Estimated 1RM</span><span><i class="d"></i>Heaviest weight lifted</span>${prE ? `<span><i class="r"></i>Pre-app best</span>` : ""}</div>`;
       })()}` : `<div class="note">${m === "ratio" && !bwlog.length ? "Log your bodyweight above to see this chart." : `No sessions in the last ${RLABEL[range]}. Pick a longer range.`}</div>`}
       ${m === "e1rm" ? `<div class="note">Estimated 1RM uses the Epley formula on your best set each day. Estimates from sets of 3+ reps can be about 5% out either way; a heavy single you actually lift is the better number.</div>` : ""}
-      ${bw ? "" : (() => { const pr = priorOf(ex);
+      ${bw || ss.some(s2 => s2.sets.some(x => x.carry)) ? "" : (() => { const pr = priorOf(ex);
         if (priorEdit === ex) return `<div class="addrow" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;margin-top:10px"><input id="pr-kg" type="number" inputmode="decimal" placeholder="kg" value="${pr ? pr.kg : ""}" aria-label="kg"><input id="pr-reps" type="number" inputmode="numeric" placeholder="reps" value="${pr ? pr.reps : "1"}" aria-label="reps"><button class="ghost" data-act="prsave" data-ex="${esc(ex)}">Save</button></div><div class="hint">Your best before you started logging. Leave kg empty and save to remove it.</div>`;
         if (!pr) return `<button class="linkbtn" style="margin-top:8px" data-act="predit" data-ex="${esc(ex)}">Add your best from before the app</button>`;
         const last = ss[ss.length-1], cur = Math.max(...last.sets.filter(x => !x.bw && x.kg).map(e1)), pe = e1(pr);
@@ -783,7 +787,8 @@ function isPerHand(ex){
   const D = dbOf(ex); if (D) return D.ph || /single[- ]arm|one[- ]arm/i.test(ex) && !LEGRX.test(ex);
   return /dumbbell|\bdb\b|single[- ]arm|one[- ]arm|kettlebell|\bkb\b|unilateral/i.test(ex) && !LEGRX.test(ex);
 }
-const vOf = x => x.bw ? 0 : x.kg * x.reps * (x.ph ? 2 : 1);
+const vOf = x => x.bw || x.carry ? 0 : x.kg * x.reps * (x.ph ? 2 : 1);
+const isCarry = ex => { const D = dbOf(ex); return D ? D.carry : /carry|farmer|yoke|\bsled\b/i.test(ex); };
 const mins = ms => Math.max(1, Math.round(ms / 60000));
 function itemDur(it, now){ return (it.acc || 0) + (it.seg ? (now || Date.now()) - it.seg : 0); }
 /* Cardio */
@@ -866,7 +871,7 @@ function lastTop(ex){
 const allPlans = () => DATA.workouts.map(w => ({id:w.id, name:w.name, custom:false, items:w.items.map(i => ({ex:i.ex, sets:i.sets, reps:i.reps}))}))
   .concat(plans.map(p => ({...p, custom:true})));
 const nextPlanId = () => { let n = 1; const used = new Set(plans.map(p => p.id)); while (used.has("C" + String(n).padStart(2,"0"))) n++; return "C" + String(n).padStart(2,"0"); };
-const fmtSet = x => x.bw ? `${x.reps} reps` : `${num(x.kg)} × ${x.reps}`;
+const fmtSet = x => x.carry ? `${num(x.kg)} kg × ${Math.round(x.dist || 0)} m` : x.bw ? `${x.reps} reps` : `${num(x.kg)} × ${x.reps}`;
 const clock = ms => new Date(ms).toLocaleTimeString("en-AU", {hour:"numeric", minute:"2-digit"});
 const dur = ms => { const m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? `${m}:00`.replace(/:00$/, " min") : `${Math.floor(m/60)} h ${m%60} min`; };
 const elapsed = ms => { const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s/3600), m = Math.floor(s%3600/60); return h ? `${h}:${String(m).padStart(2,"0")}:${String(s%60).padStart(2,"0")}` : `${m}:${String(s%60).padStart(2,"0")}`; };
@@ -912,7 +917,7 @@ document.getElementById("restbar").addEventListener("click", e => {
   saveActive(); tickRest();
 });
 
-function mkItem(ex, plan){ return {ex, bw: defaultBW(ex), ph: isPerHand(ex), plan: plan || null, sets: [], acc: 0, seg: null, closed: false}; }
+function mkItem(ex, plan){ return {ex, carry: isCarry(ex), bw: isCarry(ex) ? false : defaultBW(ex), ph: isPerHand(ex), plan: plan || null, sets: [], acc: 0, seg: null, closed: false}; }
 /* ---------- Today: the day's plan, targets and warm-ups ---------- */
 const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const dayPlan = (d = new Date()) => allPlans().find(p => p.name.toLowerCase().startsWith(DAYS[d.getDay()].toLowerCase()));
@@ -926,9 +931,10 @@ function targetFor(p, i){
   const prev = wsess.filter(r => r.wid === p.id).sort((a, b) => b.start - a.start)[0];
   const li = prev && prev.items.find(x => x.ex === it.ex);
   const W = li ? working(li.sets).filter(x => !x.bw && x.kg) : [];
-  if (!W.length) return pk ? {kg: pk, reps: rr[0], why: "starting weight"} : {kg: null, reps: rr[0], why: defaultBW(it.ex) ? "" : "pick a weight that leaves 1–2 reps in reserve"};
+  if (!W.length) return pk ? {kg: pk, reps: rr[0], why: "starting weight"} : {kg: null, reps: rr[0], why: isCarry(it.ex) ? "pick a weight you can carry the full distance standing tall" : defaultBW(it.ex) ? "" : "pick a weight that leaves 1–2 reps in reserve"};
   const top = Math.max(...W.map(x => x.kg)), atTop = W.filter(x => x.kg >= top - 0.01);
   const hi = rr[1] || rr[0], lo = rr[0];
+  if (W.some(x => x.carry)) return hi && atTop.length >= ns && atTop.every(x => (x.dist || 0) >= hi) ? {kg: top + 2.5, reps: lo, why: `all sets covered ${hi} m last time`} : {kg: top, reps: hi, why: "same weight, cover the full distance"};
   if (hi && atTop.length >= ns && atTop.every(x => x.reps >= hi)) return {kg: top + 2.5, reps: lo, why: `all ${atTop.length} sets hit ${hi}+ last time`};
   if (lo && atTop.some(x => x.reps < lo)) return {kg: top, reps: lo, why: "repeat the weight, build the reps"};
   return {kg: top, reps: hi || lo, why: "same weight, aim for one more rep"};
@@ -989,7 +995,7 @@ function summarize(items){
     const v = W.reduce((a, x) => a + vOf(x), 0), r = W.reduce((a, x) => a + x.reps, 0);
     vol += v; sets += W.length; reps += r; wus += it.sets.length - W.length;
     if (W.length) { add(bodyOf(it.ex), W.length, v); helpersOf(it.ex).forEach(g => add(g, W.length * 0.5, 0)); }
-    return {ex: it.ex, n: W.length, wu: it.sets.length - W.length, flags: f, vol: v, reps: r, bw: it.sets.every(x => x.bw), ph: it.sets.some(x => x.ph), sets: it.sets, plan: it.plan || null, dur: it.dur || 0};
+    return {carry: it.sets.some(x => x.carry), dist: W.reduce((a, x) => a + (x.dist || 0), 0), ex: it.ex, n: W.length, wu: it.sets.length - W.length, flags: f, vol: v, reps: r, bw: it.sets.every(x => x.bw), ph: it.sets.some(x => x.ph), sets: it.sets, plan: it.plan || null, dur: it.dur || 0};
   });
   return {vol, sets, reps, wus, per, bp: Object.entries(bp).map(([g, o]) => ({g, ...o})).sort((a, b) => b.sets - a.sets || b.kg - a.kg)};
 }
@@ -1008,12 +1014,12 @@ function finishWorkout(endAt){
   });
   const quality = buildQuality(active, done, date);
   const skippedNames = active.items.filter(it => it.plan && !it.sets.length).map(it => it.ex);
-  done.forEach(it => it.sets.forEach(x => log.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), ex: it.ex, date, kg: x.bw ? null : x.kg, reps: x.reps, bw: x.bw, ph: !!x.ph, sid: active.id, ...(typeof x.wu === "boolean" ? {wu: x.wu} : {}), ...(x.rir != null ? {rir: x.rir} : {})})));
+  done.forEach(it => it.sets.forEach(x => log.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), ex: it.ex, date, kg: x.bw ? null : x.kg, reps: x.reps, bw: x.bw, ph: !!x.ph, sid: active.id, ...(x.carry ? {carry: true, dist: x.dist} : {}), ...(typeof x.wu === "boolean" ? {wu: x.wu} : {}), ...(x.rir != null ? {rir: x.rir} : {})})));
   cardio.forEach(c => clog.push({...c, date, sid: active.id}));
   const rec = {id: active.id, name: active.name, wid: active.wid, date, start: active.start, end, pbs, quality, skipped: skippedNames,
     cardio: cardio.map(c => ({...c})),
     items: done.map(it => ({ex: it.ex, body: bodyOf(it.ex), helpers: helpersOf(it.ex), plan: it.plan || null, dur: itemDur(it, end),
-      sets: it.sets.map(x => ({kg: x.bw ? null : x.kg, reps: x.reps, bw: x.bw, ph: !!x.ph, ...(typeof x.wu === "boolean" ? {wu: x.wu} : {}), ...(x.rir != null ? {rir: x.rir} : {})}))}))};
+      sets: it.sets.map(x => ({kg: x.bw ? null : x.kg, reps: x.reps, bw: x.bw, ph: !!x.ph, ...(x.carry ? {carry: true, dist: x.dist} : {}), ...(typeof x.wu === "boolean" ? {wu: x.wu} : {}), ...(x.rir != null ? {rir: x.rir} : {})}))}))};
   wsess.push(rec);
   if (FRIENDS) ensureLib(done.map(it => it.ex));
   if (!saveLog() || !wr(SKEY, wsess) || !wr(CKEY, clog)) return "Couldn't save on this phone. Check storage isn't full.";
@@ -1045,7 +1051,7 @@ function buildQuality(a, done, date, exSid){
       else if (below >= 0.33) { label = "In line with your usual"; }
       else { label = "Below your usual"; cls = "bad"; }
       const d = today - last;
-      delta = bw ? `${d >= 0 ? "+" : ""}${Math.round(d)} reps vs last time` : `${d >= 0 ? "+" : ""}${num(d)} kg est. 1RM vs last time`;
+      delta = it.sets.some(x => x.carry) ? `${d >= 0 ? "+" : ""}${num(d)} kg vs last time` : bw ? `${d >= 0 ? "+" : ""}${Math.round(d)} reps vs last time` : `${d >= 0 ? "+" : ""}${num(d)} kg est. 1RM vs last time`;
     }
     if (heaviest) { const pr = priorOf(it.ex); label = pr && pr.kg > todayKg ? `Heaviest since logging: ${num(todayKg)} kg` : `Heaviest ever: ${num(todayKg)} kg`; cls = "best"; delta = `+${num(todayKg - Math.max(...priorKg))} kg on your previous heaviest` + (delta ? " · " + delta : ""); }
     const notes = [];
@@ -1091,7 +1097,7 @@ function prsFor(rec){
     const pre = priorOf(it.ex);
     const parts = [];
     if (tk > pk) parts.push(`${pre && pre.kg > tk ? "Heaviest since logging" : "Heaviest ever"}: ${num(tk)} kg (+${num(tk - pk)} kg)`);
-    if (te > pe + 0.01) parts.push(`Est. 1RM ${num(te)} kg (+${num(te - pe)} kg)`);
+    if (te > pe + 0.01 && !it.sets.some(x => x.carry)) parts.push(`Est. 1RM ${num(te)} kg (+${num(te - pe)} kg)`);
     if (parts.length) out.push({ex: it.ex, txt: parts.join(" · ")});
   });
   return out;
@@ -1129,7 +1135,7 @@ function renderSummary(rec){
     ${S.per.length ? `<div class="sec"><h3>Exercises</h3><div class="qa">${S.per.map((p, i) => { const q = Q && Q.exs.find(x => x.ex === p.ex); return `<div class="qrow">
       <div class="qtop"><b>${i+1}. ${esc(p.ex)}</b>${q ? `<span class="pill ${q.cls}">${esc(q.label)}</span>` : ""}</div>
       <div class="hint">${setsTxt(p)}${p.ph ? " (per hand)" : ""}</div>
-      <div class="hint"><b style="color:var(--ink)">${p.n} set${p.n === 1 ? "" : "s"}</b> · ${p.bw ? `${p.reps} reps` : `${num(p.vol)} kg`}${p.dur ? ` · ${mins(p.dur)} min` : ""}${q && q.delta ? ` · ${esc(q.delta)}` : ""}</div>
+      <div class="hint"><b style="color:var(--ink)">${p.n} set${p.n === 1 ? "" : "s"}</b> · ${p.carry ? `${Math.round(p.dist)} m carried` : p.bw ? `${p.reps} reps` : `${num(p.vol)} kg`}${p.dur ? ` · ${mins(p.dur)} min` : ""}${q && q.delta ? ` · ${esc(q.delta)}` : ""}</div>
       ${q && q.notes.length ? `<div class="hint">${esc(q.notes.join(" · "))}</div>` : ""}
     </div>`; }).join("")}</div></div>` : ""}
     ${cardio.length ? `<div class="sec"><h3>Cardio</h3>${cardio.map(c => `<div class="crow"><div><div class="x">${ctype(c.type).label}</div><div class="hint">${distStr(c)} · ${hms(c.secs)}${c.hr ? ` · ${c.hr} bpm` : ""}</div>${c.notes ? `<div class="cnote">${esc(c.notes)}</div>` : ""}</div><span class="pill">${paceStr(c)}</span></div>`).join("")}</div>` : ""}
@@ -1171,6 +1177,7 @@ function renderActive(){
         <div class="sx-tools">${known ? "" : `<select data-act="sbody" data-i="${i}" aria-label="Body part">${GROUPS.map(g => `<option ${g === bodyOf(it.ex) ? "selected" : ""}>${g}</option>`).join("")}</select>`}
           <label><input type="checkbox" data-act="sbw" data-i="${i}" ${it.bw ? "checked" : ""}> Bodyweight</label>
           ${it.bw ? "" : `<label><input type="checkbox" data-act="sph" data-i="${i}" ${it.ph ? "checked" : ""}> Per hand ×2</label>`}
+          ${it.bw ? "" : `<label><input type="checkbox" data-act="scarry" data-i="${i}" ${it.carry ? "checked" : ""}> Distance (m)</label>`}
           <button class="linkbtn" data-act="srm" data-i="${i}">Remove</button></div>
         ${it.plan ? `<div class="hint">Plan: ${it.plan.sets ? esc(it.plan.sets) + " × " : ""}${esc(it.plan.reps)}</div>` : ""}
         ${ls ? `<div class="hint">Last time (${fmtD(ls.d)}): ${(() => { const lf2 = wuFlags(ls.sets); return ls.sets.map((x, k) => (lf2[k] ? "W " : "") + fmtSet(x)).join(" · "); })()}</div>` : ""}
@@ -1178,7 +1185,7 @@ function renderActive(){
           <div class="hint">Tap a set to edit it or mark it as a warm-up.</div>` : ""}
         ${active.edit && active.edit.i === i ? (() => { const x = it.sets[active.edit.j]; if (!x) return ""; return `<div class="edrow">
           <div class="field"><label for="ek">kg</label><input id="ek" type="number" inputmode="decimal" step="0.5" value="${x.bw ? "" : x.kg}" ${x.bw ? "disabled" : ""}></div>
-          <div class="field"><label for="er">Reps</label><input id="er" type="number" inputmode="numeric" value="${x.reps}"></div>
+          <div class="field"><label for="er">${x.carry ? "Metres" : "Reps"}</label><input id="er" type="number" inputmode="numeric" value="${x.carry ? Math.round(x.dist || 0) : x.reps}"></div>
           <div class="field"><label for="erir">RIR</label><select id="erir">${["","0","1","2","3","4"].map(v => `<option value="${v}" ${String(x.rir ?? "") === v ? "selected" : ""}>${v === "" ? "–" : v === "4" ? "4+" : v}</option>`).join("")}</select></div>
           <div class="acts"><label class="sx-tools"><input type="checkbox" id="ewu" ${f[active.edit.j] ? "checked" : ""}> Warm-up</label><span style="flex:1"></span>
             <button class="linkbtn" data-act="sdel" data-i="${i}" data-j="${active.edit.j}">Delete</button><button class="ghost" data-act="ecancel">Cancel</button><button class="ghost" data-act="esave" data-i="${i}">Save</button></div></div>`; })() : ""}
@@ -1186,7 +1193,7 @@ function renderActive(){
             return `<div class="hint" style="color:var(--ink)"><b>Next: ${isWu ? "warm-up" : "working set"} ${k} of ${of}</b>${qn.kg ? ` · ${num(qn.kg)} kg` : ""}${qn.reps ? ` × ${qn.reps}` : ""}${!isWu && k === 1 && it.why ? ` · ${esc(it.why)}` : ""}</div>`; })()
           : ghost ? `<div class="hint">Set ${nx + 1} last time: ${fmtSet(ghost)}</div>` : ""}
         <div class="addrow r4"><input id="sk-${i}" type="number" inputmode="decimal" step="0.5" min="0" placeholder="${it.bw ? "BW" : it.ph ? "kg/hand" : "kg"}" ${it.bw ? "disabled" : ""} value="${!it.bw && pre && pre.kg ? pre.kg : ""}" aria-label="Weight kg">
-          <input id="sr-${i}" type="number" inputmode="numeric" step="1" min="1" placeholder="reps" value="${pre ? pre.reps : ""}" aria-label="Reps">
+          <input id="sr-${i}" type="number" inputmode="numeric" step="1" min="1" placeholder="${it.carry ? "metres" : "reps"}" value="${pre ? (it.carry ? (pre.dist ?? pre.reps ?? "") : pre.reps) : ""}" aria-label="${it.carry ? "Distance in metres" : "Reps"}">
           <select id="sq-${i}" aria-label="Reps left in the tank (optional)"><option value="">RIR</option>${["0","1","2","3","4"].map(v => `<option value="${v}">${v === "4" ? "4+" : v}</option>`).join("")}</select>
           <button class="ghost" data-act="sset" data-i="${i}">+ Set</button></div>
       </div>`; }).join("")}
@@ -1251,14 +1258,14 @@ function sessClick(e){
   if (act === "start") startWorkout(b.dataset.pid);
   else if (act === "sset") {
     const it = active.items[i], kg = parseFloat(document.getElementById("sk-" + i).value), reps = parseInt(document.getElementById("sr-" + i).value, 10);
-    if (!(reps >= 1)) return smsg(`Enter reps for ${it.ex}.`);
-    if (!it.bw && !(kg > 0)) return smsg(`Enter kg for ${it.ex}, or tick Bodyweight.`);
+    if (!(reps >= 1)) return smsg(it.carry ? `Enter the distance in metres for ${it.ex}.` : `Enter reps for ${it.ex}.`);
+    if (!it.bw && !(kg > 0)) return smsg(it.carry ? `Enter the weight${it.ph ? " per hand" : ""} for ${it.ex}.` : `Enter kg for ${it.ex}, or tick Bodyweight.`);
     const now = Date.now();
     active.items.forEach((o, j) => { if (j !== i && o.sets.length && !o.closed) { if (o.seg) { o.acc = (o.acc || 0) + now - o.seg; o.seg = null; } o.closed = true; } });
     it.closed = false; if (!it.seg) it.seg = now;
     const rq = document.getElementById("sq-" + i).value;
     const qn = it.queue && it.queue[it.sets.length];
-    it.sets.push({kg: it.bw ? null : kg, reps, bw: it.bw, ph: !it.bw && !!it.ph, ts: now, ...(rq !== "" ? {rir: +rq} : {}), ...(qn && qn.wu && Math.abs(qn.kg - kg) < 0.01 ? {wu: true} : {})});
+    it.sets.push(it.carry && !it.bw ? {kg, reps: 1, dist: reps, carry: true, bw: false, ph: !!it.ph, ts: now} : {kg: it.bw ? null : kg, reps, bw: it.bw, ph: !it.bw && !!it.ph, ts: now, ...(rq !== "" ? {rir: +rq} : {}), ...(qn && qn.wu && Math.abs(qn.kg - kg) < 0.01 ? {wu: true} : {})});
     primeAudio(); keepAwake(true);
     const dur = qn && qn.wu ? 60 : restFor(it); active.rest = {ex: it.ex, dur, end: now + dur * 1000};
     active.edit = null; saveActive(); render(); tickRest();
@@ -1280,7 +1287,7 @@ function sessClick(e){
     const x = active.items[i].sets[active.edit.j], kg = parseFloat(document.getElementById("ek").value), reps = parseInt(document.getElementById("er").value, 10), rq = document.getElementById("erir").value;
     if (!(reps >= 1)) return smsg("Enter reps of 1 or more.");
     if (!x.bw) { if (!(kg > 0)) return smsg("Enter the weight in kg."); x.kg = kg; }
-    x.reps = reps; if (rq === "") delete x.rir; else x.rir = +rq;
+    if (x.carry) { x.dist = reps; x.reps = 1; } else x.reps = reps; if (rq === "") delete x.rir; else x.rir = +rq;
     const autoWu = wuFlags(active.items[i].sets.map(y => y === x ? {...y, wu: undefined} : y))[active.edit.j];
     const want = document.getElementById("ewu").checked; if (want === autoWu) delete x.wu; else x.wu = want;
     active.edit = null; saveActive(); render();
@@ -1335,6 +1342,7 @@ function sessChange(e){
   if (!active) return;
   const i = +t.dataset.i;
   if (t.dataset.act === "sbw") { active.items[i].bw = t.checked; saveActive(); render(); }
+  else if (t.dataset.act === "scarry") { active.items[i].carry = t.checked; saveActive(); render(); }
   else if (t.dataset.act === "sph") { active.items[i].ph = t.checked; phmap[active.items[i].ex.toLowerCase()] = t.checked; wr(HKEY, phmap); saveActive(); render(); }
   else if (t.dataset.act === "sbody") { exmap[active.items[i].ex.toLowerCase()] = t.value; wr(MKEY, exmap); render(); }
 }
@@ -1566,6 +1574,16 @@ if (!FRIENDS && !store.get("gl-mig-2")) {
       r.end = r.start + Math.max(20 * 60e3, r.items.reduce((a, it) => a + (it.dur || 0), 0)); } });
     saveLog(); wr(SKEY, wsess); wr(HKEY, phmap);
     store.set("gl-mig-2", "1");
+  } catch(e) {}
+}
+/* Carries logged before distance tracking: the reps box held metres. */
+if (!store.get("gl-mig-3")) {
+  try {
+    const fix = x => { if (!x.carry && !x.bw && x.kg) { x.dist = x.reps; x.reps = 1; x.carry = true; } };
+    log.forEach(l => { if (isCarry(l.ex)) fix(l); });
+    wsess.forEach(r => r.items.forEach(it => { if (isCarry(it.ex)) it.sets.forEach(fix); }));
+    if (active) active.items.forEach(it => { if (isCarry(it.ex)) { it.carry = true; it.bw = false; it.sets.forEach(fix); } });
+    saveLog(); wr(SKEY, wsess); saveActive(); store.set("gl-mig-3", "1");
   } catch(e) {}
 }
 if (openToday && (active || dayPlan())) { tab = "lifts"; liftView = "train"; }
