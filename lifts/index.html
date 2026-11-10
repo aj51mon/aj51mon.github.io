@@ -38,8 +38,8 @@ h1{font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:.02e
 h1 small{font-family:var(--body);font-size:13px;font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0}
 #q{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 #q:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--chip);border-radius:10px;padding:3px;gap:3px}
-.tabs button{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:.01em;border:0;background:transparent;color:var(--muted);padding:8px 2px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:8px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--chip);border-radius:10px;padding:3px;gap:3px}
+.tabs button{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:0;border:0;background:transparent;color:var(--muted);padding:8px 1px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:8px;cursor:pointer}
 .tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
 .filters{display:flex;gap:6px;overflow-x:auto;padding-block:12px 4px;scrollbar-width:none}
 .filters::-webkit-scrollbar{display:none}
@@ -247,6 +247,59 @@ body.resting .wrap{padding-bottom:96px}
 .acbox .m.u{color:var(--accent);font-weight:700}
 mark{background:var(--accent-soft);color:inherit;border-radius:3px}
 @media (prefers-reduced-motion:reduce){.chev{transition:none}}
+/* Coach tab */
+.co-sub{margin:12px 0 4px}
+.co-run{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px}
+.co-run>div{display:grid;gap:2px}
+.co-run .primary{padding:10px 18px;white-space:nowrap}
+.co-msg{margin:8px 2px 0}
+.co-meta{margin:14px 2px 0}
+.co-head{background:var(--ink);color:var(--bg);border-radius:12px;padding:14px 16px;margin-top:8px}
+.co-head span{font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.12em;color:var(--accent)}
+.co-head p{margin:4px 0 0;font-size:18px;font-weight:600;line-height:1.35}
+#list .card+.card,.co-head+.card{margin-top:10px}
+.co-scores{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;margin-top:10px}
+.co-big{font-family:var(--display);font-weight:700;font-size:62px;line-height:1;text-align:center}
+.co-big small{display:block;font-family:var(--body);font-size:12px;font-weight:600;color:var(--muted)}
+.co-bar{display:grid;grid-template-columns:92px minmax(0,1fr) 54px;gap:8px;align-items:center;font-size:13.5px;margin:6px 0}
+.co-bar b{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.co-goal{grid-template-columns:1fr 46px}.co-goal span{grid-column:1/-1}
+.co-tr{height:9px;background:var(--chip);border-radius:5px;overflow:hidden;position:relative}
+.co-tr i{display:block;height:100%;background:var(--ink);border-radius:5px}
+.co-tr em{position:absolute;top:0;bottom:0;width:2px;background:var(--ink)}
+.co-d{font-size:12px;font-weight:700;color:var(--muted)}.co-up{color:#3E9B63}.co-dn{color:#D0473A}
+.card h2{margin:0 0 6px}
+.co-since{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:8px}
+.co-since b{display:block;font-family:var(--display);font-size:30px;line-height:1}
+.co-since span{font-size:12px;color:var(--muted)}
+.co-list{margin:0;padding:0;list-style:none}
+.co-list li{padding:8px 0 8px 20px;border-top:1px solid var(--line);position:relative;font-size:14.5px}
+.co-list li:first-child{border-top:0}
+.co-win li::before{content:"+";position:absolute;left:2px;color:#3E9B63;font-weight:700}
+.co-miss li::before{content:"–";position:absolute;left:2px;color:#D0473A;font-weight:700}
+.co-wo{counter-reset:wo}.co-wo li{padding-left:30px;counter-increment:wo}
+.co-wo li::before{content:counter(wo);position:absolute;left:0;top:9px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.co-why{display:block;margin-top:2px}
+.co-g{font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;margin-right:6px;text-transform:uppercase}
+.co-g-hit{background:rgba(62,155,99,.18);color:#3E9B63}.co-g-missed{background:rgba(208,71,58,.16);color:#D0473A}.co-g-pending{background:var(--chip);color:var(--muted)}
+.co-t{width:100%;border-collapse:collapse;font-size:13.5px}
+.co-t td,.co-t th{padding:7px 4px;border-top:1px solid var(--line);text-align:left;vertical-align:middle}
+.co-t th{border-top:0;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase}
+.co-t td .hint{display:block;font-size:12px}
+.co-t td svg{color:var(--ink);display:block}
+.co-n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.co-s{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;text-transform:uppercase;white-space:nowrap;background:var(--chip);color:var(--muted)}
+.co-s-pr{background:var(--accent);color:var(--accent-ink)}.co-s-progressing{background:rgba(62,155,99,.18);color:#3E9B63}
+.co-s-stalled{background:rgba(211,150,42,.2);color:#C08420}.co-s-regressing{background:rgba(208,71,58,.16);color:#D0473A}
+.co-snaps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 6px}
+.co-snaps img{width:100%;aspect-ratio:4/5;border-radius:8px;border:1px solid var(--line);display:block;background:var(--chip)}
+.co-snaps .ghost{width:100%;margin-top:6px}
+.co-di{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;font:inherit;color:var(--ink);background:none;border:0;border-top:1px solid var(--line);padding:10px 0;cursor:pointer}
+.co-di:first-child{border-top:0}
+.co-di>span{display:grid;gap:2px;min-width:0}
+.co-di .hint{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.co-dn-n{font-family:var(--display);font-size:26px;color:var(--accent)}
+.co-dsc{font-family:var(--display);font-size:30px}
 </style>
 
 </head><body>
@@ -261,6 +314,7 @@ mark{background:var(--accent-soft);color:inherit;border-radius:3px}
       <button role="tab" id="t-exercises" data-tab="exercises">Exercises</button>
       <button role="tab" id="t-lifts" data-tab="lifts">Lifts</button>
       <button role="tab" id="t-cardio" data-tab="cardio">Cardio</button>
+      <button role="tab" id="t-coach" data-tab="coach">Coach</button>
     </div>
   </header>
   <div id="liftsub" class="subtabs liftsub" role="tablist" hidden><button data-v="train" id="ls-train">Train</button><button data-v="progress" id="ls-progress">Progress</button></div>
@@ -296,9 +350,9 @@ const DATA = (() => { const r = (k, d) => { try { const v = JSON.parse(localStor
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
-let tab = (["workouts","exercises","lifts","cardio"].includes(location.hash.slice(1)) && location.hash.slice(1)) || store.get("tab") || "workouts";
+let tab = (["workouts","exercises","lifts","cardio","coach"].includes(location.hash.slice(1)) && location.hash.slice(1)) || store.get("tab") || "workouts";
 if (tab === "coaching" || location.hash === "#coaching") tab = "exercises";
-if (!["workouts","exercises","lifts","cardio"].includes(tab)) tab = "workouts";
+if (!["workouts","exercises","lifts","cardio","coach"].includes(tab)) tab = "workouts";
 let filter = "All";
 let openToday = !location.hash;
 const q = $("#q");
@@ -388,7 +442,7 @@ $("#list").addEventListener("click", e => {
 /* ---------- Lifts: logging + progress ---------- */
 async function doExport(){
   const name = FRIENDS ? `gym-tracker-${iso(new Date())}.json` : `gym-tracker-${iso(new Date())}.json`;
-  const blob = new Blob([JSON.stringify({app:"gym-library", version:4, exported:new Date().toISOString(), log, bodyweight:bwlog, sessions:wsess, plans, exmap, cardio:clog, perhand:phmap, restmap, prior:prmap, lib: FRIENDS ? {exercises: DATA.exercises, coaching: DATA.coaching} : undefined}, null, 1)], {type:"application/json"});
+  const blob = new Blob([JSON.stringify({app:"gym-library", version:4, exported:new Date().toISOString(), log, bodyweight:bwlog, sessions:wsess, plans, exmap, cardio:clog, perhand:phmap, restmap, prior:prmap, coach: COACH.exportData(), lib: FRIENDS ? {exercises: DATA.exercises, coaching: DATA.coaching} : undefined}, null, 1)], {type:"application/json"});
   let done = false;
   try { const f = new File([blob], name, {type:"application/json"}); if (navigator.canShare?.({files:[f]})) { await navigator.share({files:[f], title:name}); done = true; } } catch(err) { if (err?.name === "AbortError") return; }
   if (!done) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
@@ -766,6 +820,7 @@ $("#list").addEventListener("change", async e => {
     if (d.perhand && typeof d.perhand === "object") phmap = {...d.perhand, ...phmap};
     if (d.restmap && typeof d.restmap === "object") { restmap = {...d.restmap, ...restmap}; wr("gl-rest-v1", restmap); }
     if (d.prior && typeof d.prior === "object") { prmap = {...d.prior, ...prmap}; savePrior(); }
+    if (Array.isArray(d.coach)) COACH.importData(d.coach);
     wr(SKEY, wsess); wr(PKEY, plans); wr(MKEY, exmap); wr(CKEY, clog); wr(HKEY, phmap);
     if (!saveLog() || !saveBW()) throw new Error("save");
     render(); const m2 = document.getElementById("bk-msg"); if (m2) m2.textContent = `Imported ${add.length} new sets and ${bwAdd.length} weigh-ins.`;
@@ -1528,6 +1583,645 @@ acBox.addEventListener("click", e => {
 });
 addEventListener("scroll", () => { if (!acBox.hidden && acEl) acShow(acEl); }, {passive: true});
 
+/* ---------- Coach: check-ins, honest feedback, diary snapshots (added 10 Nov 2026) ---------- */
+const COACH = (() => {
+// ===== Gym Coach analysis engine (pure functions, no DOM) =====
+const ENGINE_VERSION = 1;
+
+const GROUPS = {
+  chest:{label:'Chest',target:10}, back:{label:'Back',target:10}, shoulders:{label:'Shoulders',target:8},
+  biceps:{label:'Biceps',target:6}, triceps:{label:'Triceps',target:6}, quads:{label:'Quads',target:10},
+  hamstrings:{label:'Hamstrings',target:8}, glutes:{label:'Glutes',target:0}, core:{label:'Core',target:4},
+  traps:{label:'Traps',target:0}, calves:{label:'Calves',target:0}, power:{label:'Power',target:0}
+};
+const MAIN_GROUPS = ['chest','back','shoulders','biceps','triceps','quads','hamstrings','core'];
+const PUSH = ['chest','shoulders','triceps'], PULL = ['back','biceps'], LOWER = ['quads','hamstrings'];
+
+function muscleMap(name, body) {
+  const n = name.toLowerCase();
+  const has = (...k) => k.some(x => n.includes(x));
+  if (has('leg curl','hamstring curl','nordic')) return {hamstrings:1};
+  if (has('leg extension')) return {quads:1};
+  if (has('calf')) return {calves:1};
+  if (has('romanian','rdl','stiff','good morning')) return {hamstrings:1, glutes:.5};
+  if (has('deadlift')) return {hamstrings:.5, glutes:.5, back:.5, quads:.5};
+  if (has('hip thrust','glute')) return {glutes:1, hamstrings:.5};
+  if (has('squat','leg press','lunge','split','step up','hack')) return {quads:1, glutes:.5};
+  if (has('clean','snatch','jerk','jump','throw','slam')) return {power:1};
+  if (has('carry')) return {core:.5, traps:.5};
+  if (has('crunch','plank','ab ','abs','sit up','sit-up','leg raise','rollout','pallof','core')) return {core:1};
+  if (has('shrug')) return {traps:1};
+  if (has('upright row')) return {shoulders:1, traps:.5};
+  if (has('lateral raise','rear delt','face pull','reverse fly')) return {shoulders:1};
+  if (has('overhead','shoulder press','military','arnold','push press')) return {shoulders:1, triceps:.5};
+  if (has('pulldown','pull up','pull-up','pullup','chin')) return {back:1, biceps:.5};
+  if (has('row')) return {back:1, biceps:.5};
+  if (has('curl')) return {biceps:1};
+  if (has('pushdown','tricep','skull','dip','kickback','french press')) return {triceps:1};
+  if (has('bench','chest','supine','incline','decline','fly','flye','push up','push-up','pec')) return {chest:1, triceps:.5, shoulders:.5};
+  const b = (body||'').toLowerCase();
+  if (b === 'legs') return {quads:.5, hamstrings:.5};
+  if (b === 'chest') return {chest:1};
+  if (b === 'back') return {back:1};
+  if (b === 'shoulders') return {shoulders:1};
+  if (b === 'arms') return {biceps:.5, triceps:.5};
+  return {};
+}
+
+const e1rm = (kg, reps) => (!kg || !reps) ? 0 : reps === 1 ? kg : kg * (1 + Math.min(reps, 15) / 30);
+const dayNum = d => Math.floor(Date.parse(d + 'T00:00:00Z') / 864e5);
+const r1 = x => Math.round(x * 10) / 10;
+function localDate(iso) {
+  try { return new Date(iso).toLocaleDateString('en-CA'); } catch (e) { return String(iso).slice(0, 10); }
+}
+
+// ---- merge an export into the accumulated store ----
+function mergeExport(store, exp) {
+  store = store || {sets:{}, cardio:{}, bw:{}, sessions:{}, prior:{}, body:{}};
+  let added = 0;
+  for (const e of exp.log || []) {
+    if (!e.id || !e.ex || !e.date) continue;
+    if (!store.sets[e.id]) added++;
+    store.sets[e.id] = {ex:e.ex, d:e.date, kg:e.kg ?? null, r:e.reps ?? null, bw:!!e.bw,
+      wu:!!e.wu, ph:!!e.ph, ca:!!e.carry, di:e.dist ?? null, s:e.sid || null};
+  }
+  for (const c of exp.cardio || []) if (c.id) store.cardio[c.id] = {t:c.type, d:c.date, di:c.dist, sec:c.secs, n:c.notes || ''};
+  for (const b of exp.bodyweight || []) if (b.id) store.bw[b.id] = {d:b.date, kg:b.kg};
+  for (const s of exp.sessions || []) {
+    if (!s.id) continue;
+    store.sessions[s.id] = {d:s.date, n:s.name || 'Workout', min: s.end && s.start ? Math.round((s.end - s.start) / 6e4) : null};
+    for (const it of s.items || []) if (it.ex && it.body) store.body[it.ex] = it.body;
+  }
+  for (const [k, v] of Object.entries(exp.prior || {})) store.prior[k] = v;
+  return {store, added};
+}
+
+// ---- core analysis ----
+function analyse(store, opts) {
+  const nowDate = opts.nowDate; const now = dayNum(nowDate);
+  const target = opts.weeklyTarget || 4;
+  const sets = Object.values(store.sets).filter(s => s.d <= nowDate);
+  const firstDay = sets.length ? Math.min(...sets.map(s => dayNum(s.d))) : now;
+  const lastDate = sets.reduce((m, s) => s.d > m ? s.d : m, '0000');
+  const span28 = Math.max(7, Math.min(28, now - firstDay + 1));
+  const weeks28 = span28 / 7;
+
+  // group sets by exercise -> date
+  const byEx = {};
+  for (const s of sets) { (byEx[s.ex] = byEx[s.ex] || {}); (byEx[s.ex][s.d] = byEx[s.ex][s.d] || []).push(s); }
+
+  // hard sets & per-exercise session bests
+  const hard = []; const lifts = {};
+  for (const [ex, days] of Object.entries(byEx)) {
+    const sess = [];
+    for (const [d, list] of Object.entries(days)) {
+      const work = list.filter(s => !s.wu && s.r > 0);
+      if (!work.length) continue;
+      const isBw = work.every(s => s.bw || !s.kg);
+      const isCarry = work.some(s => s.ca);
+      let best = 0, top = null;
+      for (const s of work) {
+        const v = isCarry ? (s.kg || 0) * (s.di || 0) : isBw ? s.r : e1rm(s.kg, s.r);
+        if (v > best) { best = v; top = s; }
+      }
+      for (const s of work) {
+        const v = isCarry ? 1 : isBw ? s.r : e1rm(s.kg, s.r);
+        if (isCarry || v >= best * (isBw ? 0.6 : 0.75)) hard.push({ex, d, s});
+      }
+      const vol = work.reduce((a, s) => a + (s.kg || 0) * (s.r || 0), 0);
+      sess.push({d, best, top: top ? {kg: top.kg, r: top.r} : null, vol, n: work.length});
+    }
+    sess.sort((a, b) => a.d < b.d ? -1 : 1);
+    if (sess.length) lifts[ex] = {ex, sess, bw: sess.every(x => !x.top || !x.top.kg), carry: Object.values(days).flat().some(s => s.ca)};
+  }
+
+  // volume per group (28d avg & 7d)
+  const vol28 = {}, vol7 = {}, freq28 = {};
+  for (const g of Object.keys(GROUPS)) { vol28[g] = 0; vol7[g] = 0; freq28[g] = new Set(); }
+  for (const h of hard) {
+    const age = now - dayNum(h.d);
+    const m = muscleMap(h.ex, store.body[h.ex]);
+    for (const [g, w] of Object.entries(m)) {
+      if (age < span28) { vol28[g] += w; if (w >= 1) freq28[g].add(h.d); }
+      if (age < 7) vol7[g] += w;
+    }
+  }
+  const groups = {};
+  for (const g of Object.keys(GROUPS)) groups[g] = {wk: r1(vol28[g] / weeks28), last7: r1(vol7[g]), freq: r1(freq28[g].size / weeks28), target: GROUPS[g].target};
+
+  // sessions
+  const trainDays = [...new Set(sets.filter(s => !s.wu).map(s => s.d))].sort();
+  const days28 = trainDays.filter(d => now - dayNum(d) < span28);
+  const days7 = trainDays.filter(d => now - dayNum(d) < 7);
+  const perWeek = r1(days28.length / weeks28);
+  let longestGap = 0; let prev = null;
+  for (const d of days28) { if (prev) longestGap = Math.max(longestGap, dayNum(d) - dayNum(prev) - 1); prev = d; }
+  if (days28.length) longestGap = Math.max(longestGap, now - dayNum(days28[days28.length - 1]) - 0);
+  const sessMin = Object.values(store.sessions).filter(s => now - dayNum(s.d) < span28 && s.min && s.min < 240).map(s => s.min);
+  const avgMin = sessMin.length ? Math.round(sessMin.reduce((a, b) => a + b, 0) / sessMin.length) : null;
+
+  // per-lift status
+  const liftReport = [];
+  for (const L of Object.values(lifts)) {
+    const S = L.sess; const last = S[S.length - 1];
+    const recent = now - dayNum(last.d) < 28;
+    const prevBest = S.slice(0, -1).reduce((m, x) => Math.max(m, x.best), 0);
+    const allBest = Math.max(prevBest, last.best);
+    let status = 'new', note = '';
+    const unit = L.carry ? 'kg·m' : L.bw ? 'reps' : 'kg';
+    if (S.length >= 3) {
+      const last3 = S.slice(-3);
+      const before = S.slice(0, -3).reduce((m, x) => Math.max(m, x.best), 0);
+      const bestIdx = S.findIndex(x => x.best === allBest);
+      const sinceBest = dayNum(last.d) - dayNum(S[bestIdx].d);
+      const recentAvg = (S[S.length - 1].best + S[S.length - 2].best) / 2;
+      if (last.best > prevBest * 1.005) status = 'pr';
+      else if (recentAvg < allBest * 0.93 && sinceBest <= 35) status = 'regressing';
+      else if (S.length - 1 - bestIdx >= 3 && sinceBest >= 14) status = 'stalled';
+      else if (before ? Math.max(...last3.map(x => x.best)) > before * 1.005 : last.best > S[0].best * 1.005) status = 'progressing';
+      else status = 'holding';
+    } else if (S.length === 2 && last.best > prevBest * 1.005) status = 'pr';
+    const first = S[0].best;
+    const pct = first ? r1((allBest - first) / first * 100) : 0;
+    const prior = store.prior[L.ex.toLowerCase()];
+    liftReport.push({ex: L.ex, status, recent, n: S.length, unit, best: r1(allBest), last: r1(last.best), lastDate: last.d,
+      lastTop: last.top, gainPct: pct, series: S.slice(-10).map(x => r1(x.best)),
+      prior: prior ? {kg: prior.kg, reps: prior.reps, e1: r1(e1rm(prior.kg, prior.reps))} : null,
+      bestTop: (S.find(x => x.best === allBest) || {}).top || null});
+  }
+  liftReport.sort((a, b) => b.n - a.n);
+
+  // conditioning
+  const cardio = Object.values(store.cardio).filter(c => c.d <= nowDate).sort((a, b) => a.d < b.d ? -1 : 1);
+  const cardioTypes = {};
+  for (const c of cardio) {
+    if (!c.di || !c.sec) continue;
+    const km = c.t.startsWith('run') || c.t === 'bike' || c.di < 100; // run/bike distances in km
+    const pace = km ? c.sec / c.di : c.sec / (c.di / 500); // s/km or s/500m
+    (cardioTypes[c.t] = cardioTypes[c.t] || []).push({d: c.d, pace, dist: c.di, sec: c.sec, unit: km ? '/km' : '/500m'});
+  }
+  const cardioReport = Object.entries(cardioTypes).map(([t, L]) => ({t, n: L.length, unit: L[0].unit,
+    first: Math.round(L[0].pace), last: Math.round(L[L.length - 1].pace), best: Math.round(Math.min(...L.map(x => x.pace))),
+    series: L.slice(-10).map(x => Math.round(x.pace)), lastDate: L[L.length - 1].d}));
+  const cardio14 = cardio.filter(c => now - dayNum(c.d) < 14).length;
+
+  // bodyweight
+  const bw = Object.values(store.bw).sort((a, b) => a.d < b.d ? -1 : 1);
+  const bwLast = bw[bw.length - 1] || null;
+  const bwDaysSince = bwLast ? now - dayNum(bwLast.d) : null;
+  let bwRate = null;
+  if (bw.length >= 2) {
+    const a = bw[0], b = bwLast; const wks = (dayNum(b.d) - dayNum(a.d)) / 7;
+    if (wks >= 1) bwRate = r1((b.kg - a.kg) / a.kg * 100 / wks * 10) / 10;
+  }
+
+  // ---- scores ----
+  const consistency = Math.round(100 * Math.min(1, perWeek / target));
+  const active = liftReport.filter(l => l.recent && l.n >= 3);
+  const progPts = active.reduce((a, l) => a + ({pr: 1, progressing: 1, holding: .6, stalled: .3, regressing: 0}[l.status] ?? .5), 0);
+  const progression = active.length ? Math.round(100 * progPts / active.length) : null;
+  const balance = Math.round(100 * MAIN_GROUPS.reduce((a, g) => a + Math.min(1, groups[g].wk / GROUPS[g].target), 0) / MAIN_GROUPS.length);
+  const improvedCardio = cardioReport.filter(c => c.n >= 2 && c.last < c.first).length;
+  const conditioning = Math.round(Math.min(1, cardio14 / 4) * 70 + (cardioReport.length ? 30 * improvedCardio / cardioReport.filter(c => c.n >= 2).length || 0 : 0));
+  const parts = [consistency, progression, balance, conditioning].filter(x => x != null);
+  const overall = Math.round(parts.reduce((a, b) => a + b, 0) / parts.length);
+
+  const push = PUSH.reduce((a, g) => a + groups[g].wk, 0), pull = PULL.reduce((a, g) => a + groups[g].wk, 0);
+  const lower = LOWER.reduce((a, g) => a + groups[g].wk, 0) + groups.glutes.wk * 0.5;
+  const upper = push + pull;
+  const totalHard28 = hard.filter(h => now - dayNum(h.d) < span28).length;
+
+  return {_hard: hard.map(h => ({ex: h.ex, d: h.d})), _body: store.body, nowDate, lastDate, span28, target,
+    stats: {perWeek, sessions28: days28.length, sessions7: days7.length, longestGap, avgMin, hardWk: r1(totalHard28 / weeks28), totalSets: sets.length, trainDays: trainDays.length, firstDate: trainDays[0] || null},
+    groups, lifts: liftReport, cardio: cardioReport, cardio14,
+    bw: {last: bwLast, daysSince: bwDaysSince, ratePctWk: bwRate, n: bw.length},
+    ratios: {pushPull: pull ? r1(push / pull) : null, lowerShare: upper + lower ? Math.round(100 * lower / (upper + lower)) : 0},
+    scores: {overall, consistency, progression, balance, conditioning}};
+}
+
+// ---- grade previous work-ons against the new data ----
+function gradeWorkons(prevReport, store, A) {
+  if (!prevReport || !prevReport.workons) return [];
+  const since = prevReport.lastDate;
+  const newSets = Object.values(store.sets).filter(s => s.d > since && s.d <= A.nowDate);
+  const newDays = [...new Set(newSets.filter(s => !s.wu).map(s => s.d))];
+  const spanDays = Math.max(1, dayNum(A.nowDate) - dayNum(since));
+  return prevReport.workons.map(w => {
+    const c = w.check || {}; let result = 'pending', detail = '';
+    if (!newDays.length) return {...w, result: 'pending', detail: 'No training logged since that update.'};
+    if (c.type === 'beat') {
+      const list = newSets.filter(s => s.ex === c.ex && !s.wu && s.r > 0);
+      if (!list.length) { result = 'missed'; detail = `${c.ex} wasn't trained.`; }
+      else {
+        const best = Math.max(...list.map(s => c.bw ? s.r : e1rm(s.kg, s.r)));
+        result = best >= c.value * (c.strict ? 1.002 : 1) ? 'hit' : 'missed';
+        detail = `Best since: ${r1(best)}${c.bw ? ' reps' : 'kg e1RM'} vs target ${c.strict ? '>' : '≥'} ${c.value}${c.bw ? '' : 'kg'}.`;
+      }
+    } else if (c.type === 'groupSets') {
+      let v = 0;
+      for (const h of A._hard) if (h.d > since && h.d <= A.nowDate) v += (muscleMap(h.ex, A._body[h.ex])[c.group] || 0);
+      const rate = r1(v / Math.max(7, spanDays) * 7);
+      result = spanDays < 4 ? 'pending' : rate >= c.target ? 'hit' : 'missed';
+      detail = `${GROUPS[c.group].label}: ${r1(v)} hard sets in ${spanDays} days (≈${rate}/wk, target ${c.target}).`;
+    } else if (c.type === 'sessions') {
+      const rate = r1(newDays.length / spanDays * 7);
+      result = spanDays < 5 ? 'pending' : rate >= c.target ? 'hit' : 'missed';
+      detail = `${newDays.length} sessions in ${spanDays} days (≈${rate}/wk, target ${c.target}).`;
+    } else if (c.type === 'cardio') {
+      const n = Object.values(store.cardio).filter(x => x.d > since && x.d <= A.nowDate).length;
+      result = n >= c.target ? 'hit' : spanDays < 6 ? 'pending' : 'missed';
+      detail = `${n} conditioning pieces logged (target ${c.target}).`;
+    } else if (c.type === 'bw') {
+      const n = Object.values(store.bw).filter(x => x.d > since).length;
+      result = n ? 'hit' : 'missed'; detail = n ? `${n} bodyweight log(s).` : 'No bodyweight logged.';
+    } else if (c.type === 'train') {
+      const n = new Set(newSets.filter(s => s.ex === c.ex && !s.wu).map(s => s.d)).size;
+      result = n >= c.target ? 'hit' : spanDays < 6 ? 'pending' : 'missed';
+      detail = `${c.ex}: ${n} session(s) (target ${c.target}).`;
+    }
+    return {...w, result, detail};
+  });
+}
+
+const fmtPace = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+const nextLoad = (top, bw) => {
+  if (!top) return '';
+  if (bw) return `${top.r + 1} reps`;
+  const inc = top.kg >= 40 ? 2.5 : 1;
+  return `${top.kg}kg × ${top.r + 1} or ${r1(top.kg + inc)}kg × ${top.r}`;
+};
+
+// ---- feedback writer ----
+function buildFeedback(A, prev, graded) {
+  const wins = [], misses = [], cands = [], goals = [];
+  const s = A.stats, sc = A.scores;
+  const recentLifts = A.lifts.filter(l => l.recent);
+
+  // consistency
+  if (s.perWeek >= A.target) wins.push(`Consistency: ${s.perWeek} sessions/week over the last ${Math.round(A.span28 / 7)} weeks — at or above your ${A.target}/wk target.`);
+  else {
+    misses.push(`Consistency: ${s.perWeek} sessions/week vs a ${A.target}/wk target.`);
+    cands.push({p: 90 - s.perWeek * 10, text: `Train ${A.target}× this week — book the sessions in your calendar now.`, why: 'Frequency is the base everything else sits on.', check: {type: 'sessions', target: A.target}});
+  }
+  if (s.longestGap >= 5) misses.push(`Longest gap without training: ${s.longestGap} days.`);
+
+  // lifts
+  const prs = recentLifts.filter(l => l.status === 'pr');
+  for (const l of prs.slice(0, 4)) wins.push(`${l.ex}: new best ${l.unit === 'kg' ? 'est. 1RM ' + l.best + 'kg' : l.best + ' ' + l.unit}${l.lastTop && l.unit === 'kg' ? ` (from ${l.lastTop.kg}kg × ${l.lastTop.r})` : ''}.`);
+  for (const l of recentLifts.filter(l => l.status === 'progressing').slice(0, 3)) wins.push(`${l.ex}: trending up (+${l.gainPct}% since first logged, best ${l.best}${l.unit === 'kg' ? 'kg e1RM' : ' ' + l.unit}).`);
+  for (const l of recentLifts.filter(l => l.status === 'stalled')) {
+    misses.push(`${l.ex}: stalled — no new best (${l.best}${l.unit === 'kg' ? 'kg e1RM' : ' ' + l.unit}) in your last 3+ sessions.`);
+    cands.push({p: 70 + l.n, text: `${l.ex}: beat ${l.bestTop && l.unit === 'kg' ? l.bestTop.kg + 'kg × ' + l.bestTop.r : 'your best'} — aim for ${nextLoad(l.bestTop, l.unit !== 'kg')}.`, why: 'Small, specific overload targets break stalls (progressive overload).', check: {type: 'beat', ex: l.ex, value: l.best, bw: l.unit === 'reps', strict: true}});
+  }
+  for (const l of recentLifts.filter(l => l.status === 'regressing')) {
+    misses.push(`${l.ex}: down — recent sessions average below 93% of your best (${l.best}${l.unit === 'kg' ? 'kg' : ' ' + l.unit}). Check sleep, food and fatigue before adding load.`);
+    cands.push({p: 75, text: `${l.ex}: get back to ${l.bestTop && l.unit === 'kg' ? l.bestTop.kg + 'kg × ' + l.bestTop.r : 'your best'} before adding weight.`, why: 'A drop of 7%+ is more often fatigue or recovery than strength loss.', check: {type: 'beat', ex: l.ex, value: r1(l.best * 0.97), bw: l.unit === 'reps'}});
+  }
+  const stale = A.lifts.filter(l => !l.recent && l.n >= 3).slice(0, 2);
+  for (const l of stale) misses.push(`${l.ex}: not trained in 4+ weeks (last ${l.lastDate}).`);
+  for (const l of A.lifts.filter(l => l.prior && l.recent)) {
+    const pct = Math.round(l.best / l.prior.e1 * 100);
+    goals.push({ex: l.ex, pct, text: `${l.ex}: ${pct}% of your previous best (${l.prior.kg}kg × ${l.prior.reps}). Now est. ${l.best}kg.`});
+  }
+
+  // volume
+  for (const g of MAIN_GROUPS) {
+    const G = A.groups[g]; const t = GROUPS[g].target;
+    if (G.wk < t * 0.6) {
+      misses.push(`${GROUPS[g].label}: ${G.wk} hard sets/week (evidence-based minimum ≈ ${t}).`);
+      cands.push({p: 60 + (t - G.wk) * 4 + (LOWER.includes(g) ? 15 : 0), text: `${GROUPS[g].label}: hit ${t} hard sets this week${G.freq < 2 ? ', split over 2 sessions' : ''}.`, why: 'Dose–response research: ~10+ hard sets per muscle per week grows more muscle than fewer, trained ~2×/week.', check: {type: 'groupSets', group: g, target: t}});
+    } else if (G.wk >= t) wins.push(`${GROUPS[g].label}: ${G.wk} hard sets/week${G.freq >= 2 ? `, ${G.freq}×/week` : ''}.`);
+    if (G.wk > 22) misses.push(`${GROUPS[g].label}: ${G.wk} hard sets/week is very high — watch recovery and joints.`);
+  }
+  if (A.ratios.pushPull && A.ratios.pushPull > 1.5) {
+    misses.push(`Push:pull ratio ${A.ratios.pushPull}:1 — pressing well ahead of pulling.`);
+    cands.push({p: 72, text: 'Add 4 hard sets of rows or pulldowns each week.', why: 'A push-heavy split is linked with shoulder issues; ~1:1 is the usual aim.', check: {type: 'groupSets', group: 'back', target: Math.max(10, Math.round(A.groups.back.wk + 4))}});
+  }
+  if (A.ratios.lowerShare < 30) misses.push(`Legs are ${A.ratios.lowerShare}% of your hard sets — low for strength, size and rugby.`);
+
+  // conditioning
+  if (A.cardio14 >= 4) wins.push(`Conditioning: ${A.cardio14} pieces in the last 14 days.`);
+  else cands.push({p: 50 + (4 - A.cardio14) * 5, text: `Log ${Math.max(2, 4 - A.cardio14)} conditioning pieces before the next update.`, why: 'Keeps the aerobic base you want without eating into lifting.', check: {type: 'cardio', target: Math.max(2, 4 - A.cardio14)}});
+  for (const c of A.cardio.filter(c => c.n >= 2)) {
+    const d = c.first - c.last;
+    if (d > 0) wins.push(`${cardioName(c.t)}: pace ${fmtPace(c.first)} → ${fmtPace(c.last)}${c.unit} (best ${fmtPace(c.best)}).`);
+    else if (d < 0) misses.push(`${cardioName(c.t)}: pace slower than your first (${fmtPace(c.first)} → ${fmtPace(c.last)}${c.unit}).`);
+  }
+
+  // bodyweight
+  if (A.bw.daysSince == null || A.bw.daysSince > 14) {
+    misses.push(A.bw.daysSince == null ? 'No bodyweight logged — size gain can’t be judged.' : `Bodyweight last logged ${A.bw.daysSince} days ago — size gain can’t be judged.`);
+    cands.push({p: 55, text: 'Log bodyweight at least once a week (same time, same conditions).', why: 'For size, aim ~0.25–0.5% bodyweight gain per week; you can only steer what you measure.', check: {type: 'bw'}});
+  } else if (A.bw.ratePctWk != null) {
+    const r = A.bw.ratePctWk;
+    (r >= 0.2 && r <= 0.6 ? wins : misses).push(`Bodyweight trend ${r > 0 ? '+' : ''}${r}%/week (lean-gain range ≈ +0.25–0.5%).`);
+  }
+
+  // previous work-ons
+  const hit = graded.filter(g => g.result === 'hit').length, missed = graded.filter(g => g.result === 'missed').length;
+  if (hit) wins.unshift(`Hit ${hit} of ${graded.length} work-ons from last update.`);
+  if (missed) misses.unshift(`Missed ${missed} of ${graded.length} work-ons from last update.`);
+  // repeat missed work-ons at top priority (carry-over)
+  for (const g of graded.filter(g => g.result === 'missed')) cands.push({p: 100, text: g.text, why: 'Carried over — missed last update.', check: g.check, carried: (g.carried || 0) + 1});
+
+  // pick top 3 unique work-ons
+  const seen = new Set(); const workons = [];
+  for (const c of cands.sort((a, b) => b.p - a.p)) {
+    const k = JSON.stringify(c.check); if (seen.has(k)) continue; seen.add(k);
+    workons.push({text: c.text, why: c.why, check: c.check, carried: c.carried || 0}); if (workons.length === 3) break;
+  }
+
+  // headline: the most uncomfortable truth first
+  let headline;
+  const carried = workons.find(w => w.carried >= 2);
+  const lowLegs = A.ratios.lowerShare < 30;
+  if (carried) headline = `You've now missed "${carried.text}" ${carried.carried} updates running. That's the one thing to fix.`;
+  else if (sc.consistency < 60) headline = `Attendance is the problem: ${s.perWeek} sessions/week. Nothing else matters until that's fixed.`;
+  else if (missed && missed >= hit) headline = `You missed more work-ons (${missed}) than you hit (${hit}). Progress needs follow-through.`;
+  else if (lowLegs) headline = `Legs are only ${A.ratios.lowerShare}% of your hard sets. Your upper body is carrying this programme.`;
+  else if (recentLifts.filter(l => l.status === 'stalled' || l.status === 'regressing').length >= 2) headline = `${recentLifts.filter(l => l.status === 'stalled' || l.status === 'regressing').length} lifts have stalled or slipped. Overload needs to be more deliberate.`;
+  else if (prs.length) headline = `${prs.length} new best${prs.length > 1 ? 's' : ''} this update — the work is paying off. Keep the same pressure on.`;
+  else headline = `Solid, steady block. No red flags — but no new bests either. Push one lift on purpose next week.`;
+
+  let delta = null;
+  if (prev && prev.scores) delta = A.scores.overall - prev.scores.overall;
+  return {headline, wins: wins.slice(0, 7), misses: misses.slice(0, 7), workons, delta, goals};
+}
+function cardioName(t) { return ({row: 'Row', ski: 'SkiErg', 'run-in': 'Indoor run', 'run-out': 'Outdoor run', run: 'Run', bike: 'Bike'})[t] || t; }
+
+// ---- one full update ----
+function runUpdate(store, exp, prevReport, settings) {
+  const nowDate = localDate(exp.exported || new Date().toISOString());
+  const A = analyse(store, {nowDate, weeklyTarget: settings.weeklyTarget});
+  const graded = gradeWorkons(prevReport, store, A);
+  const F = buildFeedback(A, prevReport, graded);
+  // since last update
+  let since = null;
+  if (prevReport) {
+    const newSets = Object.values(store.sets).filter(s => s.d > prevReport.lastDate);
+    const newPRs = A.lifts.filter(l => { const p = (prevReport.liftBests || {})[l.ex]; return p != null && l.best > p * 1.005; }).map(l => ({ex: l.ex, from: prevReport.liftBests[l.ex], to: l.best, unit: l.unit}));
+    since = {sessions: new Set(newSets.filter(s => !s.wu).map(s => s.d)).size, sets: newSets.length, prs: newPRs, from: prevReport.lastDate};
+  }
+  const liftBests = {}; for (const l of A.lifts) liftBests[l.ex] = l.best;
+  return {v: ENGINE_VERSION, ts: Date.now(), exported: exp.exported, nowDate, lastDate: A.lastDate,
+    n: (prevReport ? prevReport.n : 0) + 1, scores: A.scores, prevScores: prevReport ? prevReport.scores : null,
+    stats: A.stats, groups: A.groups, ratios: A.ratios, bw: A.bw, cardio: A.cardio, cardio14: A.cardio14,
+    lifts: A.lifts.slice(0, 16), liftBests, since, graded, ...F};
+}
+
+
+
+  const RKEY = "gl-coach-v1", SETKEY = "gl-coach-set-v1";
+  let reports = rd(RKEY, []); if (!Array.isArray(reports)) reports = [];
+  let settings = rd(SETKEY, {weeklyTarget: 4}); if (!settings || typeof settings !== "object") settings = {weeklyTarget: 4};
+  let viewN = null, view = "latest", msg = "";
+  const SNAP = {};
+  const save = () => wr(RKEY, reports);
+  const STATUS = {pr: "PR", progressing: "Up", holding: "Holding", stalled: "Stalled", regressing: "Down", new: "New"};
+  const fmtD = d => new Date(d + "T00:00:00").toLocaleDateString("en-AU", {day: "numeric", month: "short", year: "numeric"});
+  const dl = (a, b) => b == null || a == null ? "" : a === b ? `<span class="co-d">±0</span>` : `<span class="co-d ${a > b ? "co-up" : "co-dn"}">${a > b ? "+" : ""}${a - b}</span>`;
+
+  function appExport(exportedIso) {
+    return {app: "gym-library", exported: exportedIso, log, bodyweight: bwlog, sessions: wsess, cardio: clog, prior: prmap};
+  }
+  function strip(r) { delete r._hard; delete r._body; return r; }
+
+  // Run a check-in from the app's own data. First check-in rebuilds past weeks as diary entries.
+  function checkIn() {
+    const nowIso = new Date().toISOString(), today = iso(new Date());
+    let base = reports.slice();
+    if (base.length && base[base.length - 1].nowDate === today) base.pop(); // re-running today replaces today's entry
+    const exp = appExport(nowIso);
+    const out = [];
+    let prev = base[base.length - 1] || null;
+    if (!base.length) {
+      const dates = log.map(e => e.date).filter(Boolean).sort();
+      if (dates.length) {
+        const cut = new Date(dates[0] + "T00:00:00"); cut.setDate(cut.getDate() + 7);
+        while (Math.floor((new Date(today + "T00:00:00") - cut) / 864e5) >= 4) {
+          const c = iso(cut), f = x => (x || []).filter(e => e.date <= c);
+          const part = {...exp, exported: new Date(c + "T23:00:00").toISOString(), log: f(exp.log), cardio: f(exp.cardio), sessions: f(exp.sessions), bodyweight: f(exp.bodyweight)};
+          const r = strip(runUpdate(mergeExport(null, part).store, part, prev, settings)); r.backfilled = true;
+          out.push(r); prev = r; cut.setDate(cut.getDate() + 7);
+        }
+      }
+    }
+    const r = strip(runUpdate(mergeExport(null, exp).store, exp, prev, settings));
+    out.push(r);
+    reports = base.concat(out);
+    if (!save()) msg = "Couldn't save — storage is full or blocked.";
+    else msg = out.length > 1 ? `Check-in saved. Your history was rebuilt as ${out.length} weekly entries.` : `Check-in #${r.n} saved.`;
+    viewN = null; view = "latest";
+  }
+
+  function spark(series, invert) {
+    if (!series || series.length < 2) return `<span class="hint">—</span>`;
+    const w = 84, h = 24, mn = Math.min(...series), mx = Math.max(...series), rg = mx - mn || 1;
+    const pts = series.map((v, i) => [i / (series.length - 1) * (w - 4) + 2, invert ? (v - mn) / rg * (h - 6) + 3 : h - 3 - (v - mn) / rg * (h - 6)]);
+    const l = pts[pts.length - 1];
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" points="${pts.map(p => p.join(",")).join(" ")}"/><circle cx="${l[0]}" cy="${l[1]}" r="2.8" fill="var(--accent)"/></svg>`;
+  }
+
+  function renderReport(R) {
+    const sc = R.scores, ps = R.prevScores || {}, latest = R === reports[reports.length - 1];
+    const bars = [["Consistency", "consistency"], ["Progression", "progression"], ["Balance", "balance"], ["Conditioning", "conditioning"]]
+      .map(([l, k]) => `<div class="co-bar"><span>${l}</span><div class="co-tr"><i style="width:${sc[k] ?? 0}%"></i></div><b>${sc[k] ?? "—"} ${dl(sc[k], ps[k])}</b></div>`).join("");
+    let h = "";
+    if (!latest) h += `<div class="banner"><div><b>Check-in #${R.n}</b><span class="hint">${fmtD(R.nowDate)}</span></div><button class="ghost" data-act="co-latest">Latest</button></div>`;
+    h += `<div class="hint co-meta">Check-in #${R.n} · ${fmtD(R.nowDate)}${R.backfilled ? " · rebuilt from history" : ""}</div>`;
+    h += `<section class="co-head"><span>STRAIGHT TALK</span><p>${esc(R.headline)}</p></section>`;
+    h += `<section class="card co-scores"><div class="co-big">${sc.overall}<small>Overall ${dl(sc.overall, ps.overall)}</small></div><div>${bars}</div></section>`;
+    if (R.since) {
+      h += `<section class="card"><h2>Since last check-in</h2><div class="co-since"><div><b>${R.since.sessions}</b><span>sessions</span></div><div><b>${R.since.sets}</b><span>sets</span></div><div><b>${R.since.prs.length}</b><span>new bests</span></div></div>`;
+      if (R.since.prs.length) h += `<ul class="co-list co-win">${R.since.prs.map(p => `<li>${esc(p.ex)}: ${p.from} → <b>${p.to}${p.unit === "kg" ? "kg" : " " + esc(p.unit)}</b></li>`).join("")}</ul>`;
+      h += `</section>`;
+    }
+    if (R.graded && R.graded.length) h += `<section class="card"><h2>Last work-ons</h2><ul class="co-list">${R.graded.map(g => `<li><span class="co-g co-g-${g.result}">${g.result}</span>${esc(g.text)}<span class="hint co-why">${esc(g.detail)}</span></li>`).join("")}</ul></section>`;
+    h += `<section class="card"><h2>Work-ons</h2><ol class="co-list co-wo">${R.workons.map(w => `<li>${esc(w.text)}${w.carried ? ` <span class="co-g co-g-missed">carried ×${w.carried}</span>` : ""}<span class="hint co-why">${esc(w.why)}</span></li>`).join("") || "<li>Nothing flagged — keep the current plan.</li>"}</ol></section>`;
+    h += `<section class="card"><h2>Slipping</h2><ul class="co-list co-miss">${R.misses.map(m => `<li>${esc(m)}</li>`).join("") || "<li>Nothing flagged.</li>"}</ul></section>`;
+    h += `<section class="card"><h2>Working</h2><ul class="co-list co-win">${R.wins.map(m => `<li>${esc(m)}</li>`).join("") || "<li>No clear wins this time.</li>"}</ul></section>`;
+    if (R.goals && R.goals.length) h += `<section class="card"><h2>Comeback goals</h2>${R.goals.map(g => `<div class="co-bar co-goal"><span>${esc(g.text)}</span><div class="co-tr"><i style="width:${Math.min(100, g.pct)}%;background:var(--accent)"></i></div><b>${g.pct}%</b></div>`).join("")}</section>`;
+    h += `<section class="card"><h2>Lifts</h2><table class="co-t"><tr><th>Lift</th><th>Status</th><th>Best</th><th>Trend</th></tr>${R.lifts.map(l => `<tr><td>${esc(l.ex)}<span class="hint">${l.n} session${l.n > 1 ? "s" : ""}${l.recent ? "" : " · not recent"}</span></td><td><span class="co-s co-s-${l.status}">${STATUS[l.status]}</span></td><td class="co-n">${l.best}${l.unit === "kg" ? "" : `<span class="hint"> ${esc(l.unit)}</span>`}</td><td>${spark(l.series)}</td></tr>`).join("")}</table><div class="hint" style="margin-top:6px">Best = estimated 1RM (Epley), per hand for dumbbells.</div></section>`;
+    const mains = ["chest", "back", "shoulders", "biceps", "triceps", "quads", "hamstrings", "core"], maxV = Math.max(24, ...mains.map(g => R.groups[g].wk));
+    h += `<section class="card"><h2>Weekly hard sets</h2>${mains.map(g => { const v = R.groups[g], t = GROUPS[g].target, c = v.wk >= t ? "#3E9B63" : v.wk >= t * .6 ? "#D3962A" : "#D0473A";
+      return `<div class="co-bar"><span>${GROUPS[g].label}</span><div class="co-tr" style="position:relative;height:12px"><i style="width:${v.wk / maxV * 100}%;background:${c}"></i><em style="left:${t / maxV * 100}%"></em></div><b>${v.wk}</b></div>`; }).join("")}
+      <div class="hint" style="margin-top:6px">4-week average · tick = target · push:pull ${R.ratios.pushPull ?? "—"}:1 · legs ${R.ratios.lowerShare}% of sets</div></section>`;
+    if (R.cardio.length) h += `<section class="card"><h2>Conditioning pace</h2><table class="co-t"><tr><th>Type</th><th>First</th><th>Latest</th><th>Best</th><th>Trend</th></tr>${R.cardio.map(c => `<tr><td>${esc(cardioName(c.t))}<span class="hint">${c.n} logged</span></td><td class="co-n">${fmtPace(c.first)}</td><td class="co-n"><b>${fmtPace(c.last)}</b></td><td class="co-n">${fmtPace(c.best)}</td><td>${spark(c.series, true)}</td></tr>`).join("")}</table><div class="hint" style="margin-top:6px">Per 500m (erg) or per km (run, bike). Line rises as you get faster.</div></section>`;
+    h += `<section class="card"><h2>Diary snapshots</h2><div class="hint">1080×1350 — Instagram portrait.</div><div class="co-snaps"><div><img id="co-s1" alt="Check-in summary card"><button class="ghost" data-act="co-share" data-k="1">Save summary</button></div><div><img id="co-s2" alt="Lifts card"><button class="ghost" data-act="co-share" data-k="2">Save lifts</button></div></div><div class="hint" id="co-smsg">Or press and hold an image to save it.</div></section>`;
+    setTimeout(() => drawSnaps(R), 0);
+    return h;
+  }
+
+  function renderDiary() {
+    if (!reports.length) return `<div class="empty">No check-ins yet.</div>`;
+    const ser = reports.map(r => r.scores.overall);
+    let h = "";
+    if (reports.length > 1) {
+      const w = 560, ht = 120, mn = Math.min(...ser, 50);
+      const pts = ser.map((v, i) => [20 + i / (ser.length - 1) * (w - 40), ht - 18 - (v - mn) / (100 - mn) * (ht - 36)]);
+      h += `<section class="card"><h2>Overall score</h2><svg viewBox="0 0 ${w} ${ht}" width="100%" style="color:var(--ink)"><polyline fill="none" stroke="currentColor" stroke-width="2" points="${pts.map(p => p.join(",")).join(" ")}"/>${pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${i === pts.length - 1 ? "var(--accent)" : "currentColor"}"/><text x="${p[0]}" y="${p[1] - 9}" font-size="13" text-anchor="middle" fill="currentColor">${ser[i]}</text>`).join("")}</svg></section>`;
+    }
+    h += `<section class="card">${reports.slice().reverse().map(r => `<button class="co-di" data-act="co-open" data-n="${r.n}"><b class="co-dn-n">#${r.n}</b><span><b>${fmtD(r.nowDate)}</b><span class="hint">${esc(r.headline)}</span></span><b class="co-dsc">${r.scores.overall}</b></button>`).join("")}</section>`;
+    return h;
+  }
+
+  function renderSettings() {
+    return `<section class="card"><h2>Settings</h2><div style="display:flex;gap:8px;align-items:center;margin-top:8px"><label for="co-tg" class="hint" style="flex:1">Target sessions per week</label><input id="co-tg" class="plain" type="number" inputmode="numeric" min="1" max="7" value="${settings.weeklyTarget}" style="width:72px"><button class="ghost" data-act="co-tgsave">Save</button></div>
+      <div style="margin-top:12px;gap:8px;display:flex;flex-wrap:wrap"><button class="ghost" data-act="co-dellast">Delete latest check-in</button><button class="ghost" data-act="co-reset" style="color:#D0473A">Clear all check-ins</button></div>
+      <div class="hint" style="margin-top:8px">Deleting check-ins never touches your logged sets. Check-ins are included in Export backup.</div></section>
+    <section class="card"><h2>How you're judged</h2><ul class="co-list">
+      <li><b>Same rules every time.</b> Identical data gets identical feedback, so changes in what it says reflect changes in your training.</li>
+      <li><b>Straight talk first.</b> The headline is the biggest problem, if there is one.</li>
+      <li><b>Max 3 work-ons, each measurable</b> (goal-setting research: specific goals beat “do your best”). Each is graded hit / missed / pending at the next check-in; a missed one carries over, and if missed twice it becomes the headline.</li>
+      <li><b>Estimated 1RM</b> (Epley): kg × (1 + reps/30), reps capped at 15. Bodyweight moves use reps; carries use kg × metres.</li>
+      <li><b>Hard set</b>: a non-warm-up set at ≥75% of that day's best e1RM for the lift.</li>
+      <li><b>Volume targets</b> (hard sets/week, last 4 weeks; primary muscle 1, secondary ½): ~10 chest, back, quads; 8 shoulders, hamstrings; 6 arms; 4 core — dose–response meta-analysis (Schoenfeld et al., 2017), ~2×/week per muscle (Schoenfeld et al., 2016).</li>
+      <li><b>Lift status</b>: PR = latest beat all before; Up = recent best above earlier best; Stalled = no new best in 3+ sessions over 2+ weeks; Down = last two under 93% of best.</li>
+      <li><b>Bodyweight</b>: for size, ~0.25–0.5% gain per week (Iraki et al., 2019).</li>
+      <li><b>Scores</b>: Consistency = sessions/wk ÷ target. Progression = PR/Up 1, Holding 0.6, Stalled 0.3, Down 0. Balance = each main muscle's sets ÷ target (capped). Conditioning = cardio pieces in 14 days (70) + share of paces improving (30). Overall = mean.</li>
+      <li class="hint">Limits: e1RM is an estimate; muscles are mapped by exercise name; effort isn't logged, so hard sets are inferred from load.</li></ul></section>`;
+  }
+
+  function render() {
+    chips([]); $("#filters").innerHTML = ""; $("#count").textContent = "";
+    const R = viewN ? reports.find(r => r.n === viewN) : reports[reports.length - 1];
+    const today = iso(new Date()), last = reports[reports.length - 1];
+    const newSince = last ? log.filter(l => l.date > last.lastDate).length : log.length;
+    let h = `<div class="subtabs co-sub" role="tablist">${[["latest", "Check-in"], ["diary", "Diary"], ["method", "Method"]].map(([k, l]) => `<button data-act="co-view" data-v="${k}" aria-pressed="${view === k}">${l}</button>`).join("")}</div>`;
+    if (view === "latest") {
+      h += `<section class="card co-run"><div><b>${last ? (last.nowDate === today ? "Checked in today" : `Last check-in ${fmtD(last.nowDate)}`) : "No check-ins yet"}</b><span class="hint">${last ? `${newSince} new set${newSince === 1 ? "" : "s"} logged since` : "Your first check-in rebuilds your history week by week."}</span></div><button class="primary" data-act="co-run">${last && last.nowDate === today ? "Re-run" : "Check in"}</button></section>`;
+      if (msg) { h += `<div class="hint co-msg" role="status">${esc(msg)}</div>`; msg = ""; }
+      h += R ? renderReport(R) : `<div class="empty">Check in once a week (e.g. Sunday night) to get feedback and a diary entry. Data comes straight from what you've logged here.</div>`;
+    } else if (view === "diary") h += renderDiary();
+    else h += renderSettings();
+    return h;
+  }
+
+  // ---- snapshot cards ----
+  function wrap(x, text, X, Y, maxW, lh, maxLines) {
+    const words = String(text).split(" "); let line = "", lines = [];
+    for (const w of words) { const t = line ? line + " " + w : w; if (x.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+    if (line) lines.push(line);
+    if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] += "…"; }
+    lines.forEach((l, i) => x.fillText(l, X, Y + i * lh)); return Y + lines.length * lh;
+  }
+  const DF = '"Barlow Condensed","Arial Narrow",sans-serif', BF = 'Barlow,system-ui,sans-serif';
+  const INK = "#171A19", MUTE = "#5E6663", PAPER = "#EEF0EE", ACC = "#B57F00";
+  function baseCard(x, R, title) {
+    x.fillStyle = PAPER; x.fillRect(0, 0, 1080, 1350);
+    x.fillStyle = INK; x.fillRect(0, 0, 1080, 14); x.fillStyle = ACC; x.fillRect(0, 14, 1080, 6);
+    x.fillStyle = MUTE; x.font = `600 32px ${DF}`; x.fillText(`TRAINING DIARY · CHECK-IN ${String(R.n).padStart(2, "0")} · ${title}`, 72, 96);
+    x.fillStyle = INK; x.font = `700 112px ${DF}`; x.fillText(fmtD(R.nowDate).toUpperCase(), 66, 200);
+    x.fillStyle = MUTE; x.font = `500 25px ${BF}`; x.fillText("Est. 1RM (Epley) · hard sets = ≥75% of the day’s best · you vs you", 72, 1300);
+  }
+  function drawSummary(R) {
+    const c = document.createElement("canvas"); c.width = 1080; c.height = 1350; const x = c.getContext("2d");
+    baseCard(x, R, "SUMMARY");
+    x.fillStyle = INK; x.font = `700 240px ${DF}`; x.fillText(R.scores.overall, 62, 440);
+    x.font = `600 30px ${BF}`; x.fillStyle = MUTE; x.fillText("OVERALL", 72, 488);
+    if (R.prevScores) { const d = R.scores.overall - R.prevScores.overall; x.fillStyle = d >= 0 ? "#2F7D4F" : "#B42318"; x.font = `700 40px ${BF}`; x.fillText((d > 0 ? "+" : d === 0 ? "±" : "") + d + " vs last", 72, 540); }
+    [["Consistency", "consistency"], ["Progression", "progression"], ["Balance", "balance"], ["Conditioning", "conditioning"]].forEach(([l, k], i) => {
+      const y = 280 + i * 72, v = R.scores[k] ?? 0;
+      x.fillStyle = INK; x.font = `600 30px ${BF}`; x.fillText(l, 440, y);
+      x.textAlign = "right"; x.font = `700 30px ${BF}`; x.fillText(String(R.scores[k] ?? "—"), 1008, y); x.textAlign = "left";
+      x.fillStyle = "#D5DAD7"; x.fillRect(440, y + 14, 568, 14); x.fillStyle = INK; x.fillRect(440, y + 14, 568 * v / 100, 14);
+    });
+    x.fillStyle = INK; x.fillRect(64, 584, 952, 250);
+    x.fillStyle = "#F2B92B"; x.font = `700 32px ${DF}`; x.fillText("STRAIGHT TALK", 100, 640);
+    x.fillStyle = "#FFFFFF"; x.font = `600 40px ${BF}`; wrap(x, R.headline, 100, 698, 880, 52, 3);
+    const prs = R.since ? R.since.prs.length : R.lifts.filter(l => l.status === "pr").length;
+    const row = R.cardio.find(c => c.t === "row");
+    [[R.stats.perWeek, "sessions / wk"], [R.stats.hardWk, "hard sets / wk"], [prs, R.since ? "new bests" : "PR lifts"], [row ? fmtPace(row.last) : "—", "row /500m"]].forEach(([v, l], i) => {
+      const cx = 72 + i * 240; x.fillStyle = INK; x.font = `700 88px ${DF}`; x.fillText(String(v), cx, 944); x.fillStyle = MUTE; x.font = `500 26px ${BF}`; x.fillText(l, cx, 982);
+    });
+    x.fillStyle = INK; x.font = `700 42px ${DF}`; x.fillText("WORK-ONS", 72, 1056);
+    let y = 1102;
+    R.workons.slice(0, 3).forEach((w, i) => {
+      x.fillStyle = ACC; x.beginPath(); x.arc(90, y - 10, 18, 0, 7); x.fill();
+      x.fillStyle = "#fff"; x.font = `700 22px ${BF}`; x.textAlign = "center"; x.fillText(i + 1, 90, y - 2); x.textAlign = "left";
+      x.fillStyle = INK; x.font = `500 30px ${BF}`; y = wrap(x, w.text, 124, y, 880, 36, 2) + 14;
+    });
+    if (!R.workons.length) { x.fillStyle = INK; x.font = `500 30px ${BF}`; x.fillText("Nothing flagged — keep the plan.", 72, y); }
+    return c;
+  }
+  function drawLifts(R) {
+    const c = document.createElement("canvas"); c.width = 1080; c.height = 1350; const x = c.getContext("2d");
+    baseCard(x, R, "LIFTS");
+    const COL = {pr: ACC, progressing: "#2F7D4F", holding: MUTE, stalled: "#B7791F", regressing: "#B42318", new: "#8A918E"};
+    const goals = R.goals || [];
+    const lifts = R.lifts.filter(l => l.recent && l.unit === "kg").sort((a, b) => (goals.some(g => g.ex === b.ex) - goals.some(g => g.ex === a.ex)) || b.n - a.n).slice(0, 5);
+    let y = 272;
+    lifts.forEach(l => {
+      x.fillStyle = INK; x.font = `600 36px ${BF}`;
+      let name = l.ex; while (x.measureText(name).width > 420 && name.length > 4) name = name.slice(0, -2); if (name !== l.ex) name = name.trimEnd() + "…";
+      x.fillText(name, 72, y);
+      x.fillStyle = COL[l.status]; x.font = `700 28px ${DF}`; x.fillText(STATUS[l.status].toUpperCase(), 72, y + 38);
+      x.fillStyle = INK; x.font = `700 70px ${DF}`; x.textAlign = "right"; x.fillText(l.best + "kg", 1008, y + 26); x.textAlign = "left";
+      x.fillStyle = MUTE; x.font = `500 22px ${BF}`; x.fillText("best e1RM", 204, y + 36);
+      const s = l.series;
+      if (s.length >= 2) {
+        const mn = Math.min(...s), mx = Math.max(...s), rg = mx - mn || 1, X0 = 510, W = 230, Y0 = y - 30, H = 66;
+        x.strokeStyle = INK; x.lineWidth = 4; x.lineJoin = "round"; x.beginPath();
+        s.forEach((v, i) => { const px = X0 + i / (s.length - 1) * W, py = Y0 + H - (v - mn) / rg * H; i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+        x.fillStyle = ACC; x.beginPath(); x.arc(X0 + W, Y0 + H - (s[s.length - 1] - mn) / rg * H, 8, 0, 7); x.fill();
+      }
+      x.fillStyle = "#D5DAD7"; x.fillRect(72, y + 62, 936, 2);
+      y += 118;
+    });
+    y += 20;
+    x.fillStyle = INK; x.font = `700 42px ${DF}`; x.fillText("HARD SETS / WEEK", 72, y); y += 30;
+    const mains = ["chest", "back", "shoulders", "biceps", "triceps", "quads", "hamstrings", "core"];
+    const maxV = Math.max(24, ...mains.map(g => R.groups[g].wk)), colW = 936 / 8, H = 1210 - y - 40;
+    mains.forEach((g, i) => {
+      const v = R.groups[g].wk, t = GROUPS[g].target, cx = 72 + i * colW, bh = v / maxV * H, th = t / maxV * H, base = y + H;
+      x.fillStyle = v >= t ? "#2F7D4F" : v >= t * .6 ? "#B7791F" : "#B42318"; x.fillRect(cx + 18, base - bh, colW - 36, bh);
+      x.fillStyle = INK; x.fillRect(cx + 8, base - th - 2, colW - 16, 4);
+      x.font = `700 26px ${BF}`; x.textAlign = "center"; x.fillText(String(v), cx + colW / 2, base - Math.max(bh, th) - 14);
+      x.fillStyle = MUTE; x.font = `500 22px ${BF}`; x.fillText(GROUPS[g].label, cx + colW / 2, base + 30); x.textAlign = "left";
+    });
+    x.fillStyle = MUTE; x.font = `500 23px ${BF}`; x.fillText(`Line = target · legs ${R.ratios.lowerShare}% of sets · push:pull ${R.ratios.pushPull ?? "—"}:1`, 72, 1258);
+    return c;
+  }
+  async function drawSnaps(R) {
+    try { await Promise.all([document.fonts.load(`700 40px "Barlow Condensed"`), document.fonts.load(`600 30px "Barlow Condensed"`), document.fonts.load(`500 20px Barlow`), document.fonts.load(`600 20px Barlow`)]); } catch (e) {}
+    const i1 = document.getElementById("co-s1"), i2 = document.getElementById("co-s2"); if (!i1 || !i2) return;
+    const c1 = drawSummary(R), c2 = drawLifts(R);
+    SNAP[1] = {c: c1, name: `gym-diary-${R.nowDate}-checkin${R.n}-summary.png`}; SNAP[2] = {c: c2, name: `gym-diary-${R.nowDate}-checkin${R.n}-lifts.png`};
+    i1.src = c1.toDataURL("image/png"); i2.src = c2.toDataURL("image/png");
+  }
+  async function share(k) {
+    const s = SNAP[k], m = document.getElementById("co-smsg"); if (!s) return;
+    const blob = await new Promise(r => s.c.toBlob(r, "image/png"));
+    try {
+      const f = new File([blob], s.name, {type: "image/png"});
+      if (navigator.canShare?.({files: [f]})) { await navigator.share({files: [f]}); if (m) m.textContent = "Shared — choose Save Image to keep it in Photos."; return; }
+    } catch (err) { if (err?.name === "AbortError") return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = s.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+
+  // ---- actions ----
+  $("#list").addEventListener("click", e => {
+    const b = e.target.closest("[data-act^=co-]"); if (!b) return;
+    const act = b.dataset.act;
+    const arm = label => { if (b.hasAttribute("data-armed")) return true; b.setAttribute("data-armed", ""); const o = b.textContent; b.textContent = label; setTimeout(() => { if (b.isConnected) { b.removeAttribute("data-armed"); b.textContent = o; } }, 3000); return false; };
+    if (act === "co-run") { b.disabled = true; b.textContent = "Analysing…"; setTimeout(() => { checkIn(); window.render(); scrollTo(0, 0); }, 20); return; }
+    if (act === "co-view") { view = b.dataset.v; viewN = null; }
+    else if (act === "co-latest") viewN = null;
+    else if (act === "co-open") { viewN = +b.dataset.n; view = "latest"; scrollTo(0, 0); }
+    else if (act === "co-share") { share(b.dataset.k); return; }
+    else if (act === "co-tgsave") { const v = Math.max(1, Math.min(7, parseInt(document.getElementById("co-tg").value) || 4)); settings.weeklyTarget = v; wr(SETKEY, settings); msg = `Target saved (${v}/week) — applies from your next check-in.`; view = "latest"; }
+    else if (act === "co-dellast") { if (!arm("Tap again to delete the latest check-in")) return; reports.pop(); save(); viewN = null; }
+    else if (act === "co-reset") { if (!arm("Tap again to clear every check-in")) return; reports = []; save(); viewN = null; }
+    window.render();
+  });
+
+  return {
+    render,
+    exportData: () => reports,
+    importData: rs => { if (Array.isArray(rs) && rs.length && rs.length >= reports.length) { reports = rs.filter(r => r && r.n && r.scores); save(); } }
+  };
+})();
+
 function render(){
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===tab));
   if (FRIENDS) $("#sub").textContent = `${plans.length} workout${plans.length===1?"":"s"} · ${DATA.exercises.length} exercise${DATA.exercises.length===1?"":"s"}`;
@@ -1538,7 +2232,7 @@ function render(){
   $("#sessbox").hidden = lv !== "train";
   $("#ex-list").innerHTML = exNames().map(n => `<option value="${esc(n)}"></option>`).join("");
   if (lv === "train") $("#sessbox").innerHTML = renderSess();
-  const html = tab==="workouts" ? renderWorkouts() : tab==="exercises" ? (FRIENDS ? renderExercisesF() : renderExercises()) : tab==="lifts" ? renderLifts() : renderCardio();
+  const html = tab==="workouts" ? renderWorkouts() : tab==="exercises" ? (FRIENDS ? renderExercisesF() : renderExercises()) : tab==="lifts" ? renderLifts() : tab==="coach" ? COACH.render() : renderCardio();
   $("#list").innerHTML = html || (lv === "train" ? "" : `<div class="empty">Nothing matches. Clear the search or pick All.</div>`);
 }
 /* One-time clean-up of Aaron's exercise names (agreed 21 Oct 2026). Runs once, only in the main app. */
