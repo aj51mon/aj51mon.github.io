@@ -1232,7 +1232,7 @@ function renderActive(){
         <div class="sx-tools">${known ? "" : `<select data-act="sbody" data-i="${i}" aria-label="Body part">${GROUPS.map(g => `<option ${g === bodyOf(it.ex) ? "selected" : ""}>${g}</option>`).join("")}</select>`}
           <label><input type="checkbox" data-act="sbw" data-i="${i}" ${it.bw ? "checked" : ""}> Bodyweight</label>
           ${it.bw ? "" : `<label><input type="checkbox" data-act="sph" data-i="${i}" ${it.ph ? "checked" : ""}> Per hand ×2</label>`}
-          ${it.bw ? "" : `<label><input type="checkbox" data-act="scarry" data-i="${i}" ${it.carry ? "checked" : ""}> Distance (m)</label>`}
+          ${it.carry ? `<label><input type="checkbox" data-act="scarry" data-i="${i}" checked> Distance (m)</label>` : ""}
           <button class="linkbtn" data-act="srm" data-i="${i}">Remove</button></div>
         ${it.plan ? `<div class="hint">Plan: ${it.plan.sets ? esc(it.plan.sets) + " × " : ""}${esc(it.plan.reps)}</div>` : ""}
         ${ls ? `<div class="hint">Last time (${fmtD(ls.d)}): ${(() => { const lf2 = wuFlags(ls.sets); return ls.sets.map((x, k) => (lf2[k] ? "W " : "") + fmtSet(x)).join(" · "); })()}</div>` : ""}
