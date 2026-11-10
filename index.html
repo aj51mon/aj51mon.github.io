@@ -370,6 +370,149 @@ function rx(sets, reps){
   return sets ? `<b>${esc(sets)}</b><span>× ${esc(reps)}</span>` : `<span>${esc(reps)}</span>`;
 }
 
+/* ---------- Plan builder: answers + current lifts → a weekly plan ---------- */
+const PB_SLOTS = {
+  hpushH: {gym:"Barbell Bench Press", db:"Dumbbell Bench Press", bw:"Push-Up"},
+  hpush2: {gym:"Incline Dumbbell Press", db:"Incline Dumbbell Press", bw:"Dips"},
+  vpush:  {gym:"Overhead Press", db:"Dumbbell Shoulder Press", bw:"Dips", avoidOH:{gym:"Landmine Press", db:"Incline Dumbbell Press", bw:"Push-Up"}},
+  vpull:  {gym:"Lat Pulldown", db:"Pull-Up", bw:"Pull-Up"},
+  hpull:  {gym:"Seated Cable Row", db:"Dumbbell Row", bw:"Inverted Row"},
+  hpullH: {gym:"Barbell Row", db:"Chest-Supported Dumbbell Row", bw:"Inverted Row"},
+  squat:  {gym:"Back Squat", db:"Goblet Squat", bw:"Bulgarian Split Squat", avoidSq:{gym:"Belt Squat", db:"Goblet Squat", bw:"Bulgarian Split Squat"}},
+  squat2: {gym:"Leg Press", db:"Bulgarian Split Squat", bw:"Split Squat"},
+  hinge:  {gym:"Romanian Deadlift", db:"Dumbbell Romanian Deadlift", bw:"Glute Bridge", avoidDl:{gym:"Barbell Hip Thrust", db:"Glute Bridge", bw:"Glute Bridge"}},
+  dead:   {gym:"Deadlift", db:"Dumbbell Romanian Deadlift", bw:"Glute Bridge", avoidDl:{gym:"Barbell Hip Thrust", db:"Glute Bridge", bw:"Glute Bridge"}},
+  hamC:   {gym:"Lying Leg Curl", db:"Nordic Hamstring Curl", bw:"Nordic Hamstring Curl"},
+  quadI:  {gym:"Leg Extension", db:"Split Squat", bw:"Split Squat"},
+  calf:   {gym:"Standing Calf Raise", db:"Single-Leg Calf Raise", bw:"Single-Leg Calf Raise"},
+  lat:    {gym:"Dumbbell Lateral Raise", db:"Dumbbell Lateral Raise", bw:null},
+  rear:   {gym:"Face Pull", db:"Rear Delt Fly", bw:null},
+  bi:     {gym:"Dumbbell Curl", db:"Dumbbell Curl", bw:"Chin-Up"},
+  bi2:    {gym:"Hammer Curl", db:"Hammer Curl", bw:null},
+  tri:    {gym:"Tricep Pushdown", db:"Overhead Dumbbell Tricep Extension", bw:"Bench Dip"},
+  core:   {gym:"Cable Crunch", db:"Crunch", bw:"Plank"},
+  core2:  {gym:"Hanging Knee Raise", db:"Hanging Knee Raise", bw:"Dead Bug"},
+  pow:    {gym:"Box Jump", db:"Box Jump", bw:"Broad Jump"},
+  pow2:   {gym:"Hang Power Clean", db:"Jump Squat", bw:"Jump Squat", newbie:{gym:"Kettlebell Swing", db:"Jump Squat", bw:"Jump Squat"}},
+  carry:  {gym:"Farmer's Carry", db:"Farmer's Carry", bw:null}
+};
+/* m = main lift, s = secondary, i = isolation, p = power, c = carry */
+const PB_T = {
+  upperA: {label:"Upper A (strength)", items:[["hpushH","m"],["vpull","s"],["vpush","s"],["hpull","s"],["tri","i"],["rear","i"]]},
+  upperB: {label:"Upper B (volume)", items:[["hpullH","m"],["hpushH","s"],["vpull","s"],["hpush2","s"],["lat","i"],["bi","i"],["tri","i"]]},
+  lowerA: {label:"Lower A (squat)", items:[["pow","p"],["squat","m"],["hinge","s"],["squat2","s"],["hamC","i"],["calf","i"]]},
+  lowerB: {label:"Lower B (hinge)", items:[["pow2","p"],["dead","m"],["squat2","s"],["quadI","i"],["hamC","i"],["core","i"]]},
+  fullA:  {label:"Full Body A", items:[["pow","p"],["squat","m"],["hpushH","m"],["hpull","s"],["hinge","s"],["core","i"]]},
+  fullB:  {label:"Full Body B", items:[["dead","m"],["vpush","s"],["vpull","s"],["squat2","s"],["bi","i"],["tri","i"]]},
+  fullC:  {label:"Full Body C", items:[["pow2","p"],["squat","s"],["hpush2","s"],["hpullH","s"],["lat","i"],["hamC","i"]]},
+  pushA:  {label:"Push A", items:[["hpushH","m"],["vpush","s"],["hpush2","s"],["lat","i"],["tri","i"]]},
+  pushB:  {label:"Push B", items:[["vpush","m"],["hpushH","s"],["hpush2","s"],["lat","i"],["tri","i"]]},
+  pullA:  {label:"Pull A", items:[["hpullH","m"],["vpull","s"],["rear","i"],["bi","i"],["carry","c"]]},
+  pullB:  {label:"Pull B", items:[["vpull","m"],["hpull","s"],["rear","i"],["bi2","i"],["core2","i"]]},
+  cond:   {label:"Conditioning + Core", items:[["core","i"],["core2","i"],["carry","c"]], note:"Easy day: 30–40 min of steady cardio you could talk through (tap + Add cardio), then the core work."},
+  arms:   {label:"Arms + Shoulders", items:[["lat","i"],["rear","i"],["bi","i"],["tri","i"],["bi2","i"]]}
+};
+const PB_SPLITS = {2:["fullA","fullB"], 3:["fullA","fullB","fullC"], 4:["upperA","lowerA","upperB","lowerB"], 5:["upperA","lowerA","cond","upperB","lowerB"], 6:["pushA","pullA","lowerA","pushB","pullB","lowerB"]};
+const PB_SCHEME = {
+  strength: {m:[5,"3-5"], s:[3,"6-8"], i:[3,"10-12"], p:[4,"3"], c:[3,"30-40 m"]},
+  muscle:   {m:[4,"6-10"], s:[3,"8-12"], i:[3,"10-15"], p:[3,"3"], c:[3,"30-40 m"]},
+  both:     {m:[4,"4-6"], s:[3,"8-10"], i:[3,"10-12"], p:[4,"3"], c:[3,"30-40 m"]},
+  athletic: {m:[4,"3-5"], s:[3,"6-8"], i:[2,"10-12"], p:[5,"3"], c:[3,"30-40 m"]},
+  general:  {m:[3,"8-10"], s:[3,"10-12"], i:[2,"12-15"], p:[3,"5"], c:[3,"30-40 m"]}
+};
+const PB_LIFTS = [["bench","Bench press","Barbell Bench Press"],["squat","Back squat","Back Squat"],["dead","Deadlift","Deadlift"],["ohp","Overhead press (standing)","Overhead Press"]];
+let pb = null;
+function pbDefaults(){ return {step: 1, goal: "both", exp: "some", days: [1,2,4,5], equip: "gym", len: 60, sex: store.get("gl-sex") || "M", bw: bwlog.length ? bwSorted().slice(-1)[0].kg : "", cardio: 2, avoidSq: false, avoidDl: false, avoidOH: false, lifts: {}}; }
+function pbBuild(a){
+  const n = Math.max(2, Math.min(6, a.days.length)), split = PB_SPLITS[n].slice();
+  if (n === 5 && !a.cardio) split[2] = "arms";
+  const sch = PB_SCHEME[a.goal];
+  const e1Of = k => { const L = a.lifts[k]; return L && L.kg > 0 ? L.kg * (1 + (L.reps || 1) / 30) : null; };
+  const est = {Back_Squat: e1Of("squat"), Barbell_Bench_Press: e1Of("bench"), Deadlift: e1Of("dead"), Overhead_Press: e1Of("ohp")};
+  if (!est.Deadlift && est.Back_Squat) est.Deadlift = est.Back_Squat * 1.15;
+  const e1For = ex => ({"Barbell Bench Press": est.Barbell_Bench_Press, "Back Squat": est.Back_Squat, "Deadlift": est.Deadlift, "Overhead Press": est.Overhead_Press,
+    "Romanian Deadlift": est.Deadlift ? est.Deadlift * 0.65 : null, "Barbell Row": est.Barbell_Bench_Press ? est.Barbell_Bench_Press * 0.7 : null,
+    "Incline Dumbbell Press": est.Barbell_Bench_Press ? est.Barbell_Bench_Press * 0.32 : null, "Dumbbell Bench Press": est.Barbell_Bench_Press ? est.Barbell_Bench_Press * 0.36 : null,
+    "Belt Squat": est.Back_Squat ? est.Back_Squat * 1.1 : null, "Leg Press": est.Back_Squat ? est.Back_Squat * 1.6 : null})[ex] || null;
+  const used = new Set();
+  return split.map((t, di) => {
+    const T = PB_T[t], dayName = DAYS[a.days.slice().sort((x, y) => ((x + 6) % 7) - ((y + 6) % 7))[di]];
+    let items = T.items.map(([slot, role]) => {
+      const S = PB_SLOTS[slot];
+      let src = S;
+      if (slot === "squat" && a.avoidSq) src = S.avoidSq; if ((slot === "hinge" || slot === "dead") && a.avoidDl) src = S.avoidDl; if (slot === "vpush" && a.avoidOH) src = S.avoidOH;
+      if (slot === "pow2" && a.exp === "new") src = S.newbie;
+      if (role === "p" && !["athletic","both","strength"].includes(a.goal) && a.exp === "new") return null;
+      const ex = src[a.equip]; if (!ex) return null;
+      let [sets, reps] = sch[role];
+      if (role === "m" && a.exp === "new") sets = Math.max(3, sets - 1);
+      if (role === "m" && a.exp === "exp") sets += 1;
+      if (role === "m" && di >= split.indexOf(t) && split.filter(x => PB_T[x].items.some(y => y[0] === slot && y[1] === "m")).length > 1 && used.has(ex)) reps = sch.s[1];
+      used.add(ex);
+      const hi = (range2(reps) || [null, 10])[1], e1v = e1For(ex);
+      const kg = e1v && hi && role !== "c" ? Math.max(20, roundTo(e1v / (1 + (hi + 2) / 30), 2.5)) : null;
+      return {ex, sets: String(sets), reps: kg ? `${reps} @ ${num(kg)} kg` : reps, role};
+    }).filter(Boolean);
+    const cap = a.len <= 45 ? 4 : a.len <= 60 ? 6 : 8;
+    while (items.length > cap) { const k = items.map(x => x.role).lastIndexOf("i"); items.splice(k >= 0 ? k : items.length - 1, 1); }
+    const note = T.note || (a.cardio && /lower|full/i.test(t) && di === split.length - 1 ? "Finish with 20–30 min of easy cardio." : "");
+    return {name: `${dayName}: ${T.label}`, items: items.map(({ex, sets, reps}) => ({ex, sets, reps})), note, day: dayName};
+  });
+}
+function pbCard(){
+  if (!pb) {
+    const fresh = !log.length && !plans.length;
+    return `<section class="card" style="display:grid;gap:8px">${fresh ? `<h2>New here? Build your plan</h2><div class="hint">Answer a few questions and enter any lifts you know. The app designs a weekly plan, sets your starting weights, and shows you each day's workout when you open it.</div>`
+      : `<h2 style="font-size:19px">Plan builder</h2><div class="hint">Design a new weekly plan from your goals and current lifts.</div>`}
+      <button class="${fresh ? "primary" : "ghost"}" data-act="pbstart" style="${fresh ? "" : "justify-self:start"}">${fresh ? "Build my plan" : "Open plan builder"}</button></section>`;
+  }
+  const a = pb, ch = (k, v, label) => `<button class="chip" data-act="pbset" data-k="${k}" data-v="${v}" aria-pressed="${String(a[k]) === String(v)}">${label}</button>`;
+  if (a.step === 1) return `<section class="card sesscard" style="gap:12px"><div class="wh"><h2>Your plan · 1 of 2</h2><button class="linkbtn" data-act="pbcancel">Cancel</button></div>
+    <div class="field"><label>Main goal</label><div class="planchips">${ch("goal","strength","Strength")}${ch("goal","muscle","Muscle")}${ch("goal","both","Strength + muscle")}${ch("goal","athletic","Athletic / power")}${ch("goal","general","General fitness")}</div></div>
+    <div class="field"><label>Training experience</label><div class="planchips">${ch("exp","new","Under 6 months")}${ch("exp","some","6 months – 2 years")}${ch("exp","exp","2+ years")}</div></div>
+    <div class="field"><label>Which days can you lift? (2–6)</label><div class="planchips">${[1,2,3,4,5,6,0].map(d => `<button class="chip" data-act="pbday" data-v="${d}" aria-pressed="${a.days.includes(d)}">${DAYS[d].slice(0,3)}</button>`).join("")}</div></div>
+    <div class="field"><label>Equipment</label><div class="planchips">${ch("equip","gym","Full gym")}${ch("equip","db","Dumbbells + bench")}${ch("equip","bw","Bodyweight only")}</div></div>
+    <div class="field"><label>Time per session</label><div class="planchips">${ch("len",45,"45 min")}${ch("len",60,"60 min")}${ch("len",75,"75+ min")}</div></div>
+    <div class="field"><label>Easy cardio sessions a week</label><div class="planchips">${[0,1,2,3].map(n => ch("cardio", n, String(n))).join("")}</div></div>
+    <div class="field"><label>Anything to avoid?</label><div class="planchips"><button class="chip" data-act="pbtog" data-k="avoidSq" aria-pressed="${a.avoidSq}">Barbell back squat</button><button class="chip" data-act="pbtog" data-k="avoidDl" aria-pressed="${a.avoidDl}">Deadlifts</button><button class="chip" data-act="pbtog" data-k="avoidOH" aria-pressed="${a.avoidOH}">Overhead pressing</button></div></div>
+    <div id="pbmsg" class="lf-msg" role="status"></div>
+    <button class="primary" data-act="pbnext">Next: your lifts</button></section>`;
+  if (a.step === 2) return `<section class="card sesscard" style="gap:12px"><div class="wh"><h2>Your plan · 2 of 2</h2><button class="linkbtn" data-act="pbback">Back</button></div>
+    <div class="hint">Enter a recent set you could do for each lift, e.g. 80 kg × 5. Leave blank if you don't know; the app will ask you to find a weight the first time.</div>
+    ${a.equip === "gym" ? PB_LIFTS.map(([k, label]) => `<div class="field"><label>${label}</label><div class="lf-grid"><input id="pb-${k}-kg" class="plain" type="number" inputmode="decimal" placeholder="kg" value="${a.lifts[k] ? a.lifts[k].kg : ""}"><input id="pb-${k}-r" class="plain" type="number" inputmode="numeric" placeholder="reps" value="${a.lifts[k] ? a.lifts[k].reps : ""}"></div></div>`).join("") : `<div class="hint">Dumbbell and bodyweight plans start by finding your weights in week one.</div>`}
+    <div class="lf-grid"><div class="field"><label for="pb-bw">Bodyweight (kg)</label><input id="pb-bw" class="plain" type="number" inputmode="decimal" value="${a.bw}"></div>
+      <div class="field"><label>Strength ranks for</label><div class="planchips">${ch("sex","M","Male")}${ch("sex","F","Female")}</div></div></div>
+    <button class="primary" data-act="pbmake">Design my plan</button></section>`;
+  const P = a.result;
+  return `<section class="card sesscard" style="gap:10px"><div class="wh"><h2>Your weekly plan</h2><button class="linkbtn" data-act="pbback">Change answers</button></div>
+    <div class="hint">${P.length} days a week. Weights come from the lifts you entered; anything without a weight, pick one that leaves 1–2 reps in reserve. After each session the app adjusts the next target automatically.</div>
+    ${P.map(d => `<div class="sx"><b style="font-family:var(--display);font-size:19px">${esc(d.name)}</b>${d.note ? `<div class="hint">${esc(d.note)}</div>` : ""}<ol class="steps" style="margin-top:0">${d.items.map((it, k) => `<li><span class="n">${k+1}</span><span class="x">${esc(it.ex)}</span><span class="r"><b>${esc(it.sets)}</b> × ${esc(it.reps)}</span></li>`).join("")}</ol></div>`).join("")}
+    ${allPlans().some(p => DAYS.some(dn => p.custom && p.name.startsWith(dn + ":"))) ? `<div class="hint">Saving replaces your current weekday plans (they're kept, renamed with "Old:").</div>` : ""}
+    <button class="primary" data-act="pbsave">Save plan and start</button></section>`;
+}
+function pbClick(e){
+  const b = e.target.closest("[data-act]"); if (!b || !/^pb/.test(b.dataset.act)) return;
+  e.preventDefault(); const act = b.dataset.act;
+  const sync2 = () => { if (!pb || pb.step !== 2) return; PB_LIFTS.forEach(([k]) => { const kg = parseFloat((document.getElementById(`pb-${k}-kg`) || {}).value), r = parseInt((document.getElementById(`pb-${k}-r`) || {}).value, 10); if (kg > 0) pb.lifts[k] = {kg, reps: r > 0 ? r : 1}; else delete pb.lifts[k]; }); const w = parseFloat((document.getElementById("pb-bw") || {}).value); pb.bw = w > 0 ? w : ""; };
+  if (act === "pbstart") { pb = pbDefaults(); }
+  else if (act === "pbcancel") { pb = null; }
+  else if (act === "pbset") { sync2(); const v = b.dataset.v; pb[b.dataset.k] = isNaN(+v) ? v : +v; }
+  else if (act === "pbtog") { pb[b.dataset.k] = !pb[b.dataset.k]; }
+  else if (act === "pbday") { const d = +b.dataset.v; pb.days = pb.days.includes(d) ? pb.days.filter(x => x !== d) : pb.days.concat(d); }
+  else if (act === "pbnext") { if (pb.days.length < 2 || pb.days.length > 6) { const m = document.getElementById("pbmsg"); m.textContent = "Pick between 2 and 6 days."; m.classList.add("err"); return; } pb.step = 2; }
+  else if (act === "pbback") { sync2(); pb.step = Math.max(1, pb.step - 1); }
+  else if (act === "pbmake") { sync2(); pb.result = pbBuild(pb); pb.step = 3; }
+  else if (act === "pbsave") {
+    plans.forEach(p => { if (DAYS.some(dn => p.name.startsWith(dn + ":"))) p.name = "Old: " + p.name; });
+    pb.result.forEach(d => plans.push({id: nextPlanId(), name: d.name, items: d.items, note: d.note, gen: true}));
+    if (FRIENDS) { ensureLib(pb.result.flatMap(d => d.items.map(i => i.ex))); store.set("gl-sex", pb.sex); }
+    if (pb.bw > 0 && !bwlog.some(x => x.date === iso(new Date()))) { bwlog.push({id: "b" + Date.now().toString(36), date: iso(new Date()), kg: pb.bw}); saveBW(); }
+    wr(PKEY, plans); pb = null; tab = "lifts"; liftView = "train"; store.set("tab", "lifts"); store.set("gl-liftview", "train");
+  }
+  render(); scrollTo(0, 0);
+}
+$("#list").addEventListener("click", pbClick);
+
 function renderWorkouts(){
   const W = DATA.workouts.concat(plans.map(p => ({id:p.id, name:p.name, primary:"Custom", secondary:"", custom:true, items:p.items.map((x, k) => ({n:k+1, ex:x.ex, sets:x.sets, reps:x.reps}))})));
   const cats = [...new Set(W.flatMap(w => [w.primary, ...split(w.secondary)]))];
@@ -377,7 +520,8 @@ function renderWorkouts(){
   const ws = W.filter(w => (filter==="All" || w.primary===filter || split(w.secondary).includes(filter))
     && match([w.id,w.name,w.primary,w.secondary,...w.items.map(i=>i.ex)].join(" ")));
   $("#count").textContent = `${ws.length} workout${ws.length===1?"":"s"}`;
-  const top = FRIENDS ? `<section class="card" style="display:grid;gap:8px"><button class="primary" data-act="wnew">+ Create a workout</button><div class="hint">${W.length ? "Tap a workout to see it, start it, or edit it." : "Build a workout from your own exercises, then start it from here or the Lifts tab. You can also start an empty workout on Lifts and save it as a workout at the end."}</div></section>` : "";
+  const top = pbCard() + (FRIENDS ? `<section class="card" style="display:grid;gap:8px"><button class="primary" data-act="wnew">+ Create a workout</button><div class="hint">${W.length ? "Tap a workout to see it, start it, or edit it." : "Build a workout from your own exercises, then start it from here or the Lifts tab. You can also start an empty workout on Lifts and save it as a workout at the end."}</div></section>` : "");
+  if (pb) { $("#filters").innerHTML = ""; $("#count").textContent = ""; return top; }
   if (FRIENDS && !W.length) { $("#filters").innerHTML = ""; $("#count").textContent = ""; return top; }
   return top + ws.map(w => `<details class="card" data-key="w:${esc(w.id)}" ${ws.length===1 || openCards.has("w:" + w.id) ? "open" : ""}>
     <summary><div class="wh"><div><span class="wid">${esc(w.id)}</span><h2 style="margin-top:6px">${esc(w.name)}</h2>
@@ -651,13 +795,16 @@ function liftCard(ex){
 }
 
 const monday = d => { const x = new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+const musclesOf = ex => COACH.muscleMap(ex, bodyOf(ex));
+const MLABEL = m => (COACH.GROUPS[m] || {}).label || m;
+const MTARGET = m => (COACH.GROUPS[m] || {}).target || 0;
 function weekSets(from, to){
   const g = {}, add = (k, v) => { g[k] = (g[k] || 0) + v; };
   const groups = {};
   log.filter(l => l.date >= from && l.date <= to).forEach(l => { const k = l.ex + "|" + l.date; (groups[k] = groups[k] || []).push(l); });
   Object.values(groups).forEach(sets => {
     const n = working(sets).length, ex = sets[0].ex; if (!n) return;
-    add(bodyOf(ex), n); helpersOf(ex).forEach(h => add(h, n * 0.5));
+    Object.entries(musclesOf(ex)).forEach(([m, w]) => add(m, n * w));
   });
   return g;
 }
@@ -665,13 +812,13 @@ function weeklyCard(){
   const m = monday(new Date()), from = iso(m), to = iso(new Date());
   const pm = new Date(m); pm.setDate(pm.getDate() - 7); const pe = new Date(m); pe.setDate(pe.getDate() - 1);
   const cur = weekSets(from, to), prev = weekSets(iso(pm), iso(pe));
-  const keys = GROUPS.filter(g => cur[g] || prev[g]);
-  if (!keys.length) return `<section class="card"><h2 style="font-size:19px">Sets per muscle this week</h2><div class="hint" style="margin-top:4px">Log a workout to see working sets per muscle group against a 10–20 sets/week guide.</div></section>`;
-  const scale = Math.max(22, ...keys.map(k => cur[k] || 0));
+  const all = Object.keys(COACH.GROUPS), keys = all.filter(g => MTARGET(g) > 0 || cur[g] || prev[g]);
+  if (!Object.keys(cur).length && !Object.keys(prev).length) return `<section class="card"><h2 style="font-size:19px">Sets per muscle this week</h2><div class="hint" style="margin-top:4px">Log a workout to see working sets per muscle against your weekly targets.</div></section>`;
+  const scale = Math.max(16, ...keys.map(k => Math.max(cur[k] || 0, MTARGET(k) * 1.3)));
   return `<section class="card"><h2 style="font-size:19px">Sets per muscle this week</h2>
-    <div class="hint" style="margin-top:2px">Working sets since Monday. Helper muscles count half. White marks show the 10–20 sets/week growth guide.</div>
-    <div class="wk">${keys.sort((a, b) => (cur[b] || 0) - (cur[a] || 0)).map(k => { const v = cur[k] || 0, p = prev[k] || 0; return `<div class="wk-r"><div class="bp-t"><b>${k}</b><span>${num(v)} sets <span class="hint">· last week ${num(p)}</span></span></div>
-      <div class="wk-bar"><i class="${v >= 10 ? "ok" : ""}" style="width:${Math.min(100, v / scale * 100).toFixed(1)}%"></i><u style="left:${(10 / scale * 100).toFixed(1)}%"></u><u style="left:${(20 / scale * 100).toFixed(1)}%"></u></div></div>`; }).join("")}</div></section>`;
+    <div class="hint" style="margin-top:2px">Working sets since Monday (warm-ups left out, helper muscles count half). The white mark is the weekly minimum the Coach tab uses.</div>
+    <div class="wk">${keys.sort((a, b) => all.indexOf(a) - all.indexOf(b)).map(k => { const v = cur[k] || 0, p = prev[k] || 0, t = MTARGET(k); return `<div class="wk-r"><div class="bp-t"><b>${MLABEL(k)}</b><span>${num(v)}${t ? ` / ${t}` : ""} sets <span class="hint">· last week ${num(p)}</span></span></div>
+      <div class="wk-bar"><i class="${t && v >= t ? "ok" : ""}" style="width:${Math.min(100, v / scale * 100).toFixed(1)}%"></i>${t ? `<u style="left:${(t / scale * 100).toFixed(1)}%"></u>` : ""}</div></div>`; }).join("")}</div></section>`;
 }
 function consistencyCard(){
   const target = +(store.get("gl-target") || 4);
@@ -971,7 +1118,7 @@ document.getElementById("restbar").addEventListener("click", e => {
 function mkItem(ex, plan){ return {ex, carry: isCarry(ex), bw: isCarry(ex) ? false : defaultBW(ex), ph: isPerHand(ex), plan: plan || null, sets: [], acc: 0, seg: null, closed: false}; }
 /* ---------- Today: the day's plan, targets and warm-ups ---------- */
 const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-const dayPlan = (d = new Date()) => allPlans().find(p => p.name.toLowerCase().startsWith(DAYS[d.getDay()].toLowerCase()));
+const dayPlan = (d = new Date()) => { const k = DAYS[d.getDay()].toLowerCase(), A = allPlans(); return A.find(p => p.custom && p.name.toLowerCase().startsWith(k)) || A.find(p => p.name.toLowerCase().startsWith(k)); };
 const nextDayPlan = () => { for (let k = 1; k <= 7; k++) { const d = new Date(Date.now() + k * 864e5), p = dayPlan(d); if (p) return {p, d}; } return null; };
 const planKg = r => { const m = String(r || "").match(/@\s*([\d.]+)\s*kg/i); return m ? +m[1] : null; };
 const roundTo = (v, st) => Math.round(v / st) * st;
@@ -1022,7 +1169,7 @@ function todayCard(){
   return `<section class="card sesscard" style="gap:6px">
     <div class="wh"><div><span class="wid">${esc(p.id)} · ${DAYS[new Date().getDay()]}</span><h2 style="margin-top:6px">${esc(p.name.replace(/^\w+:\s*/, ""))}</h2>
       <div class="meta">${p.items.length} exercises · about ${Math.round(mins_ / 5) * 5} min</div></div></div>
-    ${todayCue ? `<div class="note" style="margin-top:4px">${todayCue[1].map(esc).join(" ")}</div>` : ""}
+    ${todayCue ? `<div class="note" style="margin-top:4px">${todayCue[1].map(esc).join(" ")}</div>` : p.note ? `<div class="note" style="margin-top:4px">${esc(p.note)}</div>` : ""}
     <ol class="steps" style="margin-top:4px">${rows}</ol>
     <button class="primary startbtn" data-act="start" data-pid="${esc(p.id)}">Start today's workout</button>
   </section>`;
@@ -1045,7 +1192,7 @@ function summarize(items){
     const f = wuFlags(it.sets), W = it.sets.filter((x, k) => !f[k]);
     const v = W.reduce((a, x) => a + vOf(x), 0), r = W.reduce((a, x) => a + x.reps, 0);
     vol += v; sets += W.length; reps += r; wus += it.sets.length - W.length;
-    if (W.length) { add(bodyOf(it.ex), W.length, v); helpersOf(it.ex).forEach(g => add(g, W.length * 0.5, 0)); }
+    if (W.length) { const mm = Object.entries(musclesOf(it.ex)), prim = mm.reduce((a, b) => b[1] > (a ? a[1] : 0) ? b : a, null); mm.forEach(([g, w]) => add(MLABEL(g), W.length * w, prim && g === prim[0] ? v : 0)); }
     return {carry: it.sets.some(x => x.carry), dist: W.reduce((a, x) => a + (x.dist || 0), 0), ex: it.ex, n: W.length, wu: it.sets.length - W.length, flags: f, vol: v, reps: r, bw: it.sets.every(x => x.bw), ph: it.sets.some(x => x.ph), sets: it.sets, plan: it.plan || null, dur: it.dur || 0};
   });
   return {vol, sets, reps, wus, per, bp: Object.entries(bp).map(([g, o]) => ({g, ...o})).sort((a, b) => b.sets - a.sets || b.kg - a.kg)};
@@ -1621,6 +1768,10 @@ function muscleMap(name, body) {
   if (b === 'back') return {back:1};
   if (b === 'shoulders') return {shoulders:1};
   if (b === 'arms') return {biceps:.5, triceps:.5};
+  if (b === 'glutes') return {glutes:1};
+  if (b === 'calves') return {calves:1};
+  if (b === 'core') return {core:1};
+  if (b === 'full body') return {quads:.5, back:.5};
   return {};
 }
 
@@ -1682,7 +1833,7 @@ function analyse(store, opts) {
       }
       for (const s of work) {
         const v = isCarry ? 1 : isBw ? s.r : e1rm(s.kg, s.r);
-        if (isCarry || v >= best * (isBw ? 0.6 : 0.75)) hard.push({ex, d, s});
+        hard.push({ex, d, s}); /* same rule as the rest of the app: every set that isn't a warm-up */
       }
       const vol = work.reduce((a, s) => a + (s.kg || 0) * (s.r || 0), 0);
       sess.push({d, best, top: top ? {kg: top.kg, r: top.r} : null, vol, n: work.length});
@@ -1978,7 +2129,11 @@ function runUpdate(store, exp, prevReport, settings) {
   const dl = (a, b) => b == null || a == null ? "" : a === b ? `<span class="co-d">±0</span>` : `<span class="co-d ${a > b ? "co-up" : "co-dn"}">${a > b ? "+" : ""}${a - b}</span>`;
 
   function appExport(exportedIso) {
-    return {app: "gym-library", exported: exportedIso, log, bodyweight: bwlog, sessions: wsess, cardio: clog, prior: prmap};
+    /* warm-ups marked with the app's own rule so Coach and Progress count the same sets */
+    const g = {}; log.forEach(l => (g[l.ex + "|" + l.date] = g[l.ex + "|" + l.date] || []).push(l));
+    const wuIds = new Set(); Object.values(g).forEach(ss => { const f = wuFlags(ss); ss.forEach((x, k) => { if (f[k]) wuIds.add(x.id); }); });
+    const L = log.map(l => wuIds.has(l.id) ? {...l, wu: true} : l);
+    return {app: "gym-library", exported: exportedIso, log: L, bodyweight: bwlog, sessions: wsess, cardio: clog, prior: prmap};
   }
   function strip(r) { delete r._hard; delete r._body; return r; }
 
@@ -2213,6 +2368,7 @@ function runUpdate(store, exp, prevReport, settings) {
 
   return {
     render,
+    muscleMap, GROUPS,
     exportData: () => reports,
     importData: rs => { if (Array.isArray(rs) && rs.length && rs.length >= reports.length) { reports = rs.filter(r => r && r.n && r.scores); save(); } }
   };
