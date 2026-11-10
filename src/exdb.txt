@@ -1,0 +1,175 @@
+Barbell Bench Press|Chest|Shoulders,Arms||bench press;flat bench;bench;bb bench press
+Paused Bench Press|Chest|Shoulders,Arms||pause bench
+Incline Barbell Bench Press|Chest|Shoulders,Arms||incline bench press;incline barbell press;incline bench
+Decline Barbell Bench Press|Chest|Arms||decline bench press;decline bench
+Close-Grip Bench Press|Arms|Chest,Shoulders||close grip bench
+Floor Press|Chest|Arms||
+Dumbbell Bench Press|Chest|Shoulders,Arms|p|db bench press;dumbbell press;flat dumbbell press
+Incline Dumbbell Press|Chest|Shoulders,Arms|p|incline db press;incline dumbbell bench press
+Decline Dumbbell Press|Chest|Arms|p|
+Smith Machine Bench Press|Chest|Shoulders,Arms||smith bench
+Smith Machine Incline Press|Chest|Shoulders,Arms||smith incline
+Machine Chest Press|Chest|Shoulders,Arms||chest press;seated chest press
+Supine Chest Press|Chest|Shoulders,Arms||supine press
+Incline Machine Press|Chest|Shoulders,Arms||incline chest press
+Dumbbell Fly|Chest||pi|db fly;flat fly
+Incline Dumbbell Fly|Chest||pi|incline fly
+Cable Fly|Chest||i|cable crossover;cable flye
+Low-to-High Cable Fly|Chest|Shoulders|i|low to high fly
+High-to-Low Cable Fly|Chest||i|high to low fly
+Pec Deck|Chest||i|machine fly;pec fly
+Push-Up|Chest|Shoulders,Arms|b|pushup;press up
+Weighted Push-Up|Chest|Shoulders,Arms||
+Dips|Chest|Arms,Shoulders|b|dip;chest dip;parallel bar dip
+Weighted Dips|Chest|Arms,Shoulders||weighted dip
+Deadlift|Back|Glutes,Legs||conventional deadlift;barbell deadlift
+Sumo Deadlift|Legs|Glutes,Back||
+Trap Bar Deadlift|Legs|Glutes,Back||hex bar deadlift
+Romanian Deadlift|Legs|Glutes,Back||rdl;barbell rdl;barbell romanian deadlift;barbell romanian deadlifts (rdls)
+Dumbbell Romanian Deadlift|Legs|Glutes,Back|p|db rdl
+Stiff-Leg Deadlift|Legs|Glutes,Back||stiff leg deadlift;sldl
+Single-Leg Romanian Deadlift|Legs|Glutes|p|single leg rdl
+Rack Pull|Back|Glutes,Legs||
+Good Morning|Legs|Glutes,Back||
+Barbell Row|Back|Arms,Shoulders||bent over row;bent-over barbell row;bb row
+Pendlay Row|Back|Arms||
+Dumbbell Row|Back|Arms|p|single arm row;one arm row;db row;one-arm dumbbell row;single arm dumbbell row
+Chest-Supported Dumbbell Row|Back|Arms,Shoulders|p|chest supported row;incline db row
+T-Bar Row|Back|Arms,Shoulders||tbar row
+Seal Row|Back|Arms||
+Seated Cable Row|Back|Arms||cable row;seated row
+Machine Low Row|Back|Arms||low row;machine row low
+Machine Row|Back|Arms||chest supported machine row;hammer strength row
+Meadows Row|Back|Arms|p|
+Lat Pulldown|Back|Arms||lat pull down;pull down;pulldown;lat pull-down;wide grip pulldown
+Close-Grip Lat Pulldown|Back|Arms||close grip pulldown;v bar pulldown
+Single-Arm Lat Pulldown|Back|Arms|p|single arm pulldown
+Straight-Arm Pulldown|Back||i|straight arm pulldown;lat prayer
+Pull-Up|Back|Arms|b|pullup;pull up;pull-ups
+Chin-Up|Back|Arms|b|chinup;chin up;chin-ups
+Weighted Pull-Up|Back|Arms||weighted pullup
+Weighted Chin-Up|Back|Arms||
+Assisted Pull-Up|Back|Arms||assisted pullup
+Inverted Row|Back|Arms|b|bodyweight row;australian pull up
+Back Extension|Back|Glutes,Legs|b|hyperextension;45 degree back extension
+Reverse Hyper|Glutes|Back,Legs||
+Barbell Shrug|Back||i|shrug
+Dumbbell Shrug|Back||pi|db shrug
+Overhead Press|Shoulders|Arms||ohp;military press;standing overhead press;barbell overhead press;barbell shoulder press;strict press
+Seated Barbell Overhead Press|Shoulders|Arms||seated overhead press;seated barbell press;seated overhead barbell press
+Push Press|Shoulders|Arms,Legs|y|
+Dumbbell Shoulder Press|Shoulders|Arms|p|db shoulder press;dumbbell overhead press
+Seated Dumbbell Shoulder Press|Shoulders|Arms|p|seated db press
+Arnold Press|Shoulders|Arms|p|
+Machine Shoulder Press|Shoulders|Arms||shoulder press machine
+Landmine Press|Shoulders|Chest,Arms||
+Dumbbell Lateral Raise|Shoulders||pi|lateral raise;side raise;db lateral raise;lat raise
+Cable Lateral Raise|Shoulders||pi|
+Machine Lateral Raise|Shoulders||i|
+Front Raise|Shoulders||pi|
+Rear Delt Fly|Shoulders|Back|pi|reverse fly;rear delt raise
+Reverse Pec Deck|Shoulders|Back|i|rear delt machine
+Face Pull|Shoulders|Back|i|face pulls
+Upright Row|Shoulders|Back|i|
+Barbell Curl|Arms||i|bb curl;bicep curl barbell
+EZ-Bar Curl|Arms||i|ez bar curl
+Dumbbell Curl|Arms||pi|db curl;dumbbell curls;bicep curl;biceps curl;dumbbell bicep curl;single arm dumbbell curl;alternating dumbbell curl
+Hammer Curl|Arms||pi|
+Incline Dumbbell Curl|Arms||pi|incline curl
+Preacher Curl|Arms||i|ez preacher curl
+Dumbbell Preacher Curl|Arms||pi|
+Cable Curl|Arms||i|cable curls;cable bicep curl
+Bayesian Cable Curl|Arms||pi|bayesian curl
+Concentration Curl|Arms||pi|
+Spider Curl|Arms||i|
+Machine Curl|Arms||i|
+Reverse Curl|Arms||i|
+Wrist Curl|Arms||i|
+Tricep Pushdown|Arms||i|tricep push down;tricep push downs;tricep pull down;tricep pull downs;triceps pushdown;cable pushdown
+Rope Pushdown|Arms||i|rope tricep pushdown
+Single-Arm Cable Pushdown|Arms||pi|
+Overhead Cable Tricep Extension|Arms||i|overhead cable extension;cable overhead extension
+Overhead Dumbbell Tricep Extension|Arms||i|overhead db extension;overhead tricep extension
+Skull Crusher|Arms||i|skullcrusher;lying tricep extension
+Dumbbell Skull Crusher|Arms||pi|
+Tricep Kickback|Arms||pi|kickback
+Machine Tricep Extension|Arms||i|tricep extension machine
+JM Press|Arms|Chest||
+Bench Dip|Arms|Chest|b|bench dips
+Back Squat|Legs|Glutes||squat;barbell squat;back squats;high bar squat
+Low-Bar Back Squat|Legs|Glutes,Back||low bar squat
+Pause Squat|Legs|Glutes||paused squat
+Front Squat|Legs|Glutes,Core||
+Safety Bar Squat|Legs|Glutes,Back||ssb squat;safety squat bar
+Box Squat|Legs|Glutes||
+Goblet Squat|Legs|Glutes||
+Zercher Squat|Legs|Glutes,Back||
+Hack Squat|Legs|Glutes||
+Pendulum Squat|Legs|Glutes||pendulum squats
+Belt Squat|Legs|Glutes||
+Smith Machine Squat|Legs|Glutes||smith squat
+Leg Press|Legs|Glutes||
+Bulgarian Split Squat|Legs|Glutes||rear foot elevated split squat;bss
+Split Squat|Legs|Glutes||
+Walking Lunge|Legs|Glutes||walking lunges;dumbbell walking lunge;dumbbell walking lunges
+Reverse Lunge|Legs|Glutes||
+Step-Up|Legs|Glutes||step up
+Leg Extension|Legs||i|leg extensions;quad extension
+Lying Leg Curl|Legs||i|leg curl;hamstring curl
+Seated Leg Curl|Legs||i|
+Nordic Hamstring Curl|Legs||b|nordic curl;nordics;nordic ham curls
+Hip Adduction|Legs||i|adductor machine
+Sissy Squat|Legs||bi|
+Barbell Hip Thrust|Glutes|Legs||hip thrust
+Machine Hip Thrust|Glutes|Legs||
+Glute Bridge|Glutes|Legs||
+Cable Kickback|Glutes||pi|glute kickback
+Hip Abduction|Glutes||i|abductor machine
+Cable Pull-Through|Glutes|Legs||pull through
+Standing Calf Raise|Calves||i|calf raise
+Seated Calf Raise|Calves||i|
+Leg Press Calf Raise|Calves||i|
+Single-Leg Calf Raise|Calves||bi|
+Plank|Core||bi|
+Side Plank|Core||bi|
+Hanging Leg Raise|Core||bi|leg raise
+Hanging Knee Raise|Core||bi|knee raise
+Cable Crunch|Core||i|kneeling cable crunch
+Weighted Crunch|Core||i|weighted crunches;weighted cruches;machine crunch
+Crunch|Core||bi|crunches
+Sit-Up|Core||b|situp;sit up
+Decline Sit-Up|Core||b|
+Ab Wheel Rollout|Core||b|ab wheel;rollout
+Russian Twist|Core||i|
+Pallof Press|Core||i|
+Dead Bug|Core||b|
+Farmer's Carry|Full Body|Arms,Core|pc|farmers walk;farmer carry
+Suitcase Carry|Core|Arms|pc|
+Turkish Get-Up|Full Body|Core,Shoulders|p|tgu
+Power Clean|Full Body|Legs,Back|y|
+Hang Power Clean|Full Body|Legs,Back|y|hang clean
+Clean and Jerk|Full Body|Legs,Shoulders|y|
+Power Snatch|Full Body|Legs,Shoulders|y|snatch
+Push Jerk|Shoulders|Legs|y|
+Kettlebell Swing|Glutes|Legs,Back|y|kb swing
+Medicine Ball Slam|Full Body|Core|y|med ball slam;ball slam
+Rotational Med Ball Throw|Core|Shoulders|y|med ball throw
+Med Ball Chest Pass|Chest|Arms|y|
+Box Jump|Legs|Glutes|by|box jumps
+Broad Jump|Legs|Glutes|by|standing long jump
+Vertical Jump|Legs|Glutes,Calves|by|vertical jumps
+Jump Squat|Legs|Glutes|by|jump squats;squat jump
+Trap Bar Jump|Legs|Glutes|y|
+Depth Jump|Legs|Calves|by|drop jump
+Tuck Jump|Legs||by|
+Pogo Hops|Calves|Legs|by|pogo jumps
+Skater Jump|Glutes|Legs|by|skater jumps;skaters
+Split Squat Jump|Legs|Glutes|by|split squat jumps;jumping lunge
+Single-Leg Hop|Legs|Calves|by|single-leg hops;single leg hops
+Burpee|Full Body||b|burpees
+Jumping Jacks|Full Body||b|jumping jack;star jumps
+Mountain Climber|Core||b|mountain climbers
+High Knees|Legs||b|running in place / high knees
+Sled Push|Legs|Glutes|c|prowler push
+Sled Pull|Legs|Back|c|
+Battle Ropes|Full Body||b|
