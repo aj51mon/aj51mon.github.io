@@ -290,7 +290,7 @@ mark{background:var(--accent-soft);color:inherit;border-radius:3px}
 .co-n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .co-s{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;text-transform:uppercase;white-space:nowrap;background:var(--chip);color:var(--muted)}
 .co-s-pr{background:var(--accent);color:var(--accent-ink)}.co-s-progressing{background:rgba(62,155,99,.18);color:#3E9B63}
-.co-s-stalled{background:rgba(211,150,42,.2);color:#C08420}.co-s-regressing{background:rgba(208,71,58,.16);color:#D0473A}
+.co-s-stalled,.co-s-missed{background:rgba(211,150,42,.2);color:#C08420}.co-s-onplan{background:rgba(62,155,99,.18);color:#3E9B63}.co-s-offplan{background:rgba(208,71,58,.16);color:#D0473A}.co-g-retired{background:var(--chip);color:var(--muted)}.co-s-regressing{background:rgba(208,71,58,.16);color:#D0473A}
 .co-snaps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 6px}
 .co-snaps img{width:100%;aspect-ratio:4/5;border-radius:8px;border:1px solid var(--line);display:block;background:var(--chip)}
 .co-snaps .ghost{width:100%;margin-top:6px}
@@ -504,7 +504,7 @@ function pbClick(e){
   else if (act === "pbmake") { sync2(); pb.result = pbBuild(pb); pb.step = 3; }
   else if (act === "pbsave") {
     plans.forEach(p => { if (DAYS.some(dn => p.name.startsWith(dn + ":"))) p.name = "Old: " + p.name; });
-    pb.result.forEach(d => plans.push({id: nextPlanId(), name: d.name, items: d.items, note: d.note, gen: true}));
+    pb.result.forEach(d => plans.push({id: nextPlanId(), name: d.name, items: d.items, note: d.note, gen: true, created: Date.now()}));
     if (FRIENDS) { ensureLib(pb.result.flatMap(d => d.items.map(i => i.ex))); store.set("gl-sex", pb.sex); }
     if (pb.bw > 0 && !bwlog.some(x => x.date === iso(new Date()))) { bwlog.push({id: "b" + Date.now().toString(36), date: iso(new Date()), kg: pb.bw}); saveBW(); }
     wr(PKEY, plans); pb = null; tab = "lifts"; liftView = "train"; store.set("tab", "lifts"); store.set("gl-liftview", "train");
@@ -609,8 +609,8 @@ const priorOf = ex => prmap[String(ex).toLowerCase()] || null;
 const RANGES = {"4w":28, "12w":84, "1y":365, "all":null};
 const RLABEL = {"4w":"4 weeks", "12w":"12 weeks", "1y":"1 year", "all":"all time"};
 const METRICS = {
-  top:   {label:"Top set", unit:"kg",   f:s => Math.max(...s.sets.map(x => x.kg))},
-  e1rm:  {label:"Est. 1RM", unit:"kg",  f:s => Math.max(...s.sets.map(x => x.reps === 1 ? x.kg : x.kg * (1 + x.reps / 30)))},
+  top:   {label:"Top set", unit:"kg",   f:s => Math.max(...working(s.sets).map(x => x.kg))},
+  e1rm:  {label:"Est. 1RM", unit:"kg",  f:s => Math.max(...working(s.sets).map(x => x.reps === 1 ? x.kg : x.kg * (1 + x.reps / 30)))},
   vol:   {label:"Volume", unit:"kg",    f:s => working(s.sets).reduce((a, x) => a + x.kg * x.reps * (x.ph ? 2 : 1), 0)},
   best:  {label:"Best set", unit:"reps", f:s => Math.max(...s.sets.map(x => x.reps))},
   total: {label:"Total reps", unit:"reps", f:s => working(s.sets).reduce((a, x) => a + x.reps, 0)},
@@ -660,7 +660,7 @@ function rankOf(ex){
 }
 METRICS.ratio = {label:"× Bodyweight", unit:"× BW", f:s => { const b = bwAt(s.d); return b ? Math.max(...s.sets.map(e1)) / b : NaN; }};
 
-const EXDB_RAW = "Barbell Bench Press|Chest|Shoulders,Arms||bench press;flat bench;bench;bb bench press\nPaused Bench Press|Chest|Shoulders,Arms||pause bench\nIncline Barbell Bench Press|Chest|Shoulders,Arms||incline bench press;incline barbell press;incline bench\nDecline Barbell Bench Press|Chest|Arms||decline bench press;decline bench\nClose-Grip Bench Press|Arms|Chest,Shoulders||close grip bench\nFloor Press|Chest|Arms||\nDumbbell Bench Press|Chest|Shoulders,Arms|p|db bench press;dumbbell press;flat dumbbell press\nIncline Dumbbell Press|Chest|Shoulders,Arms|p|incline db press;incline dumbbell bench press\nDecline Dumbbell Press|Chest|Arms|p|\nSmith Machine Bench Press|Chest|Shoulders,Arms||smith bench\nSmith Machine Incline Press|Chest|Shoulders,Arms||smith incline\nMachine Chest Press|Chest|Shoulders,Arms||chest press;seated chest press\nSupine Chest Press|Chest|Shoulders,Arms||supine press\nIncline Machine Press|Chest|Shoulders,Arms||incline chest press\nDumbbell Fly|Chest||pi|db fly;flat fly\nIncline Dumbbell Fly|Chest||pi|incline fly\nCable Fly|Chest||i|cable crossover;cable flye\nLow-to-High Cable Fly|Chest|Shoulders|i|low to high fly\nHigh-to-Low Cable Fly|Chest||i|high to low fly\nPec Deck|Chest||i|machine fly;pec fly\nPush-Up|Chest|Shoulders,Arms|b|pushup;press up\nWeighted Push-Up|Chest|Shoulders,Arms||\nDips|Chest|Arms,Shoulders|b|dip;chest dip;parallel bar dip\nWeighted Dips|Chest|Arms,Shoulders||weighted dip\nDeadlift|Back|Glutes,Legs||conventional deadlift;barbell deadlift\nSumo Deadlift|Legs|Glutes,Back||\nTrap Bar Deadlift|Legs|Glutes,Back||hex bar deadlift\nRomanian Deadlift|Legs|Glutes,Back||rdl;barbell rdl;barbell romanian deadlift;barbell romanian deadlifts (rdls)\nDumbbell Romanian Deadlift|Legs|Glutes,Back|p|db rdl\nStiff-Leg Deadlift|Legs|Glutes,Back||stiff leg deadlift;sldl\nSingle-Leg Romanian Deadlift|Legs|Glutes|p|single leg rdl\nRack Pull|Back|Glutes,Legs||\nGood Morning|Legs|Glutes,Back||\nBarbell Row|Back|Arms,Shoulders||bent over row;bent-over barbell row;bb row\nPendlay Row|Back|Arms||\nDumbbell Row|Back|Arms|p|single arm row;one arm row;db row;one-arm dumbbell row;single arm dumbbell row\nChest-Supported Dumbbell Row|Back|Arms,Shoulders|p|chest supported row;incline db row\nT-Bar Row|Back|Arms,Shoulders||tbar row\nSeal Row|Back|Arms||\nSeated Cable Row|Back|Arms||cable row;seated row\nMachine Low Row|Back|Arms||low row;machine row low\nMachine Row|Back|Arms||chest supported machine row;hammer strength row\nMeadows Row|Back|Arms|p|\nLat Pulldown|Back|Arms||lat pull down;pull down;pulldown;lat pull-down;wide grip pulldown\nClose-Grip Lat Pulldown|Back|Arms||close grip pulldown;v bar pulldown\nSingle-Arm Lat Pulldown|Back|Arms|p|single arm pulldown\nStraight-Arm Pulldown|Back||i|straight arm pulldown;lat prayer\nPull-Up|Back|Arms|b|pullup;pull up;pull-ups\nChin-Up|Back|Arms|b|chinup;chin up;chin-ups\nWeighted Pull-Up|Back|Arms||weighted pullup\nWeighted Chin-Up|Back|Arms||\nAssisted Pull-Up|Back|Arms||assisted pullup\nInverted Row|Back|Arms|b|bodyweight row;australian pull up\nBack Extension|Back|Glutes,Legs|b|hyperextension;45 degree back extension\nReverse Hyper|Glutes|Back,Legs||\nBarbell Shrug|Back||i|shrug\nDumbbell Shrug|Back||pi|db shrug\nOverhead Press|Shoulders|Arms||ohp;military press;standing overhead press;barbell overhead press;barbell shoulder press;strict press\nSeated Barbell Overhead Press|Shoulders|Arms||seated overhead press;seated barbell press;seated overhead barbell press\nPush Press|Shoulders|Arms,Legs|y|\nDumbbell Shoulder Press|Shoulders|Arms|p|db shoulder press;dumbbell overhead press\nSeated Dumbbell Shoulder Press|Shoulders|Arms|p|seated db press\nArnold Press|Shoulders|Arms|p|\nMachine Shoulder Press|Shoulders|Arms||shoulder press machine\nLandmine Press|Shoulders|Chest,Arms||\nDumbbell Lateral Raise|Shoulders||pi|lateral raise;side raise;db lateral raise;lat raise\nCable Lateral Raise|Shoulders||pi|\nMachine Lateral Raise|Shoulders||i|\nFront Raise|Shoulders||pi|\nRear Delt Fly|Shoulders|Back|pi|reverse fly;rear delt raise\nReverse Pec Deck|Shoulders|Back|i|rear delt machine\nFace Pull|Shoulders|Back|i|face pulls\nUpright Row|Shoulders|Back|i|\nBarbell Curl|Arms||i|bb curl;bicep curl barbell\nEZ-Bar Curl|Arms||i|ez bar curl\nDumbbell Curl|Arms||pi|db curl;dumbbell curls;bicep curl;biceps curl;dumbbell bicep curl;single arm dumbbell curl;alternating dumbbell curl\nHammer Curl|Arms||pi|\nIncline Dumbbell Curl|Arms||pi|incline curl\nPreacher Curl|Arms||i|ez preacher curl\nDumbbell Preacher Curl|Arms||pi|\nCable Curl|Arms||i|cable curls;cable bicep curl\nBayesian Cable Curl|Arms||pi|bayesian curl\nConcentration Curl|Arms||pi|\nSpider Curl|Arms||i|\nMachine Curl|Arms||i|\nReverse Curl|Arms||i|\nWrist Curl|Arms||i|\nTricep Pushdown|Arms||i|tricep push down;tricep push downs;tricep pull down;tricep pull downs;triceps pushdown;cable pushdown\nRope Pushdown|Arms||i|rope tricep pushdown\nSingle-Arm Cable Pushdown|Arms||pi|\nOverhead Cable Tricep Extension|Arms||i|overhead cable extension;cable overhead extension\nOverhead Dumbbell Tricep Extension|Arms||i|overhead db extension;overhead tricep extension\nSkull Crusher|Arms||i|skullcrusher;lying tricep extension\nDumbbell Skull Crusher|Arms||pi|\nTricep Kickback|Arms||pi|kickback\nMachine Tricep Extension|Arms||i|tricep extension machine\nJM Press|Arms|Chest||\nBench Dip|Arms|Chest|b|bench dips\nBack Squat|Legs|Glutes||squat;barbell squat;back squats;high bar squat\nLow-Bar Back Squat|Legs|Glutes,Back||low bar squat\nPause Squat|Legs|Glutes||paused squat\nFront Squat|Legs|Glutes,Core||\nSafety Bar Squat|Legs|Glutes,Back||ssb squat;safety squat bar\nBox Squat|Legs|Glutes||\nGoblet Squat|Legs|Glutes||\nZercher Squat|Legs|Glutes,Back||\nHack Squat|Legs|Glutes||\nPendulum Squat|Legs|Glutes||pendulum squats\nBelt Squat|Legs|Glutes||\nSmith Machine Squat|Legs|Glutes||smith squat\nLeg Press|Legs|Glutes||\nBulgarian Split Squat|Legs|Glutes||rear foot elevated split squat;bss\nSplit Squat|Legs|Glutes||\nWalking Lunge|Legs|Glutes||walking lunges;dumbbell walking lunge;dumbbell walking lunges\nReverse Lunge|Legs|Glutes||\nStep-Up|Legs|Glutes||step up\nLeg Extension|Legs||i|leg extensions;quad extension\nLying Leg Curl|Legs||i|leg curl;hamstring curl\nSeated Leg Curl|Legs||i|\nNordic Hamstring Curl|Legs||b|nordic curl;nordics;nordic ham curls\nHip Adduction|Legs||i|adductor machine\nSissy Squat|Legs||bi|\nBarbell Hip Thrust|Glutes|Legs||hip thrust\nMachine Hip Thrust|Glutes|Legs||\nGlute Bridge|Glutes|Legs||\nCable Kickback|Glutes||pi|glute kickback\nHip Abduction|Glutes||i|abductor machine\nCable Pull-Through|Glutes|Legs||pull through\nStanding Calf Raise|Calves||i|calf raise\nSeated Calf Raise|Calves||i|\nLeg Press Calf Raise|Calves||i|\nSingle-Leg Calf Raise|Calves||bi|\nPlank|Core||bi|\nSide Plank|Core||bi|\nHanging Leg Raise|Core||bi|leg raise\nHanging Knee Raise|Core||bi|knee raise\nCable Crunch|Core||i|kneeling cable crunch\nWeighted Crunch|Core||i|weighted crunches;weighted cruches;machine crunch\nCrunch|Core||bi|crunches\nSit-Up|Core||b|situp;sit up\nDecline Sit-Up|Core||b|\nAb Wheel Rollout|Core||b|ab wheel;rollout\nRussian Twist|Core||i|\nPallof Press|Core||i|\nDead Bug|Core||b|\nFarmer's Carry|Full Body|Arms,Core|pc|farmers walk;farmer carry\nSuitcase Carry|Core|Arms|pc|\nTurkish Get-Up|Full Body|Core,Shoulders|p|tgu\nPower Clean|Full Body|Legs,Back|y|\nHang Power Clean|Full Body|Legs,Back|y|hang clean\nClean and Jerk|Full Body|Legs,Shoulders|y|\nPower Snatch|Full Body|Legs,Shoulders|y|snatch\nPush Jerk|Shoulders|Legs|y|\nKettlebell Swing|Glutes|Legs,Back|y|kb swing\nMedicine Ball Slam|Full Body|Core|y|med ball slam;ball slam\nRotational Med Ball Throw|Core|Shoulders|y|med ball throw\nMed Ball Chest Pass|Chest|Arms|y|\nBox Jump|Legs|Glutes|by|box jumps\nBroad Jump|Legs|Glutes|by|standing long jump\nVertical Jump|Legs|Glutes,Calves|by|vertical jumps\nJump Squat|Legs|Glutes|by|jump squats;squat jump\nTrap Bar Jump|Legs|Glutes|y|\nDepth Jump|Legs|Calves|by|drop jump\nTuck Jump|Legs||by|\nPogo Hops|Calves|Legs|by|pogo jumps\nSkater Jump|Glutes|Legs|by|skater jumps;skaters\nSplit Squat Jump|Legs|Glutes|by|split squat jumps;jumping lunge\nSingle-Leg Hop|Legs|Calves|by|single-leg hops;single leg hops\nBurpee|Full Body||b|burpees\nJumping Jacks|Full Body||b|jumping jack;star jumps\nMountain Climber|Core||b|mountain climbers\nHigh Knees|Legs||b|running in place / high knees\nSled Push|Legs|Glutes|c|prowler push\nSled Pull|Legs|Back|c|\nBattle Ropes|Full Body||b|";
+const EXDB_RAW = "Barbell Bench Press|Chest|Shoulders,Arms||bench press;flat bench;bench;bb bench press\nPaused Bench Press|Chest|Shoulders,Arms||pause bench\nIncline Barbell Bench Press|Chest|Shoulders,Arms||incline bench press;incline barbell press;incline bench\nDecline Barbell Bench Press|Chest|Arms||decline bench press;decline bench\nClose-Grip Bench Press|Arms|Chest,Shoulders||close grip bench\nFloor Press|Chest|Arms||\nDumbbell Bench Press|Chest|Shoulders,Arms|p|db bench press;dumbbell press;flat dumbbell press\nIncline Dumbbell Press|Chest|Shoulders,Arms|p|incline db press;incline dumbbell bench press\nDecline Dumbbell Press|Chest|Arms|p|\nSmith Machine Bench Press|Chest|Shoulders,Arms||smith bench\nSmith Machine Incline Press|Chest|Shoulders,Arms||smith incline\nMachine Chest Press|Chest|Shoulders,Arms||chest press;seated chest press\nSupine Chest Press|Chest|Shoulders,Arms||supine press\nIncline Machine Press|Chest|Shoulders,Arms||incline chest press\nDumbbell Fly|Chest||pi|db fly;flat fly\nIncline Dumbbell Fly|Chest||pi|incline fly\nCable Fly|Chest||i|cable crossover;cable flye\nLow-to-High Cable Fly|Chest|Shoulders|i|low to high fly\nHigh-to-Low Cable Fly|Chest||i|high to low fly\nPec Deck|Chest||i|machine fly;pec fly\nPush-Up|Chest|Shoulders,Arms|b|pushup;press up\nWeighted Push-Up|Chest|Shoulders,Arms||\nDips|Chest|Arms,Shoulders|b|dip;chest dip;parallel bar dip\nWeighted Dips|Chest|Arms,Shoulders||weighted dip\nDeadlift|Back|Glutes,Legs||conventional deadlift;barbell deadlift\nSumo Deadlift|Legs|Glutes,Back||\nTrap Bar Deadlift|Legs|Glutes,Back||hex bar deadlift\nRomanian Deadlift|Legs|Glutes,Back||rdl;barbell rdl;barbell romanian deadlift;barbell romanian deadlifts (rdls)\nDumbbell Romanian Deadlift|Legs|Glutes,Back|p|db rdl\nStiff-Leg Deadlift|Legs|Glutes,Back||stiff leg deadlift;sldl\nSingle-Leg Romanian Deadlift|Legs|Glutes|p|single leg rdl\nRack Pull|Back|Glutes,Legs||\nGood Morning|Legs|Glutes,Back||\nBarbell Row|Back|Arms,Shoulders||bent over row;bent-over barbell row;bb row\nPendlay Row|Back|Arms||\nDumbbell Row|Back|Arms|p|single arm row;one arm row;db row;one-arm dumbbell row;single arm dumbbell row\nChest-Supported Dumbbell Row|Back|Arms,Shoulders|p|chest supported row;incline db row\nT-Bar Row|Back|Arms,Shoulders||tbar row\nSeal Row|Back|Arms||\nSeated Cable Row|Back|Arms||cable row;seated row\nMachine Low Row|Back|Arms||low row;machine row low\nMachine Row|Back|Arms||chest supported machine row;hammer strength row\nMeadows Row|Back|Arms|p|\nLat Pulldown|Back|Arms||lat pull down;pull down;pulldown;lat pull-down;wide grip pulldown\nPlate-Loaded Lat Pulldown|Back|Arms|p|plate loaded lat pulldown;plate loaded pulldown;iso-lateral pulldown;iso lateral pulldown;hammer strength pulldown;matrix pulldown\nClose-Grip Lat Pulldown|Back|Arms||close grip pulldown;v bar pulldown\nSingle-Arm Lat Pulldown|Back|Arms|p|single arm pulldown\nStraight-Arm Pulldown|Back||i|straight arm pulldown;lat prayer\nPull-Up|Back|Arms|b|pullup;pull up;pull-ups\nChin-Up|Back|Arms|b|chinup;chin up;chin-ups\nWeighted Pull-Up|Back|Arms||weighted pullup\nWeighted Chin-Up|Back|Arms||\nAssisted Pull-Up|Back|Arms||assisted pullup\nInverted Row|Back|Arms|b|bodyweight row;australian pull up\nBack Extension|Back|Glutes,Legs|b|hyperextension;45 degree back extension\nReverse Hyper|Glutes|Back,Legs||\nBarbell Shrug|Back||i|shrug\nDumbbell Shrug|Back||pi|db shrug\nOverhead Press|Shoulders|Arms||ohp;military press;standing overhead press;barbell overhead press;barbell shoulder press;strict press\nSeated Barbell Overhead Press|Shoulders|Arms||seated overhead press;seated barbell press;seated overhead barbell press\nPush Press|Shoulders|Arms,Legs|y|\nDumbbell Shoulder Press|Shoulders|Arms|p|db shoulder press;dumbbell overhead press\nSeated Dumbbell Shoulder Press|Shoulders|Arms|p|seated db press\nArnold Press|Shoulders|Arms|p|\nMachine Shoulder Press|Shoulders|Arms||shoulder press machine\nLandmine Press|Shoulders|Chest,Arms||\nDumbbell Lateral Raise|Shoulders||pi|lateral raise;side raise;db lateral raise;lat raise\nCable Lateral Raise|Shoulders||pi|\nMachine Lateral Raise|Shoulders||i|\nFront Raise|Shoulders||pi|\nRear Delt Fly|Shoulders|Back|pi|reverse fly;rear delt raise\nReverse Pec Deck|Shoulders|Back|i|rear delt machine\nFace Pull|Shoulders|Back|i|face pulls\nUpright Row|Shoulders|Back|i|\nBarbell Curl|Arms||i|bb curl;bicep curl barbell\nEZ-Bar Curl|Arms||i|ez bar curl\nDumbbell Curl|Arms||pi|db curl;dumbbell curls;bicep curl;biceps curl;dumbbell bicep curl;single arm dumbbell curl;alternating dumbbell curl\nHammer Curl|Arms||pi|\nIncline Dumbbell Curl|Arms||pi|incline curl\nPreacher Curl|Arms||i|ez preacher curl\nDumbbell Preacher Curl|Arms||pi|\nCable Curl|Arms||i|cable curls;cable bicep curl\nBayesian Cable Curl|Arms||pi|bayesian curl\nConcentration Curl|Arms||pi|\nSpider Curl|Arms||i|\nMachine Curl|Arms||i|\nReverse Curl|Arms||i|\nWrist Curl|Arms||i|\nTricep Pushdown|Arms||i|tricep push down;tricep push downs;tricep pull down;tricep pull downs;triceps pushdown;cable pushdown\nRope Pushdown|Arms||i|rope tricep pushdown\nSingle-Arm Cable Pushdown|Arms||pi|\nOverhead Cable Tricep Extension|Arms||i|overhead cable extension;cable overhead extension\nOverhead Dumbbell Tricep Extension|Arms||i|overhead db extension;overhead tricep extension\nSkull Crusher|Arms||i|skullcrusher;lying tricep extension\nDumbbell Skull Crusher|Arms||pi|\nTricep Kickback|Arms||pi|kickback\nMachine Tricep Extension|Arms||i|tricep extension machine\nJM Press|Arms|Chest||\nBench Dip|Arms|Chest|b|bench dips\nBack Squat|Legs|Glutes||squat;barbell squat;back squats;high bar squat\nLow-Bar Back Squat|Legs|Glutes,Back||low bar squat\nPause Squat|Legs|Glutes||paused squat\nFront Squat|Legs|Glutes,Core||\nSafety Bar Squat|Legs|Glutes,Back||ssb squat;safety squat bar\nBox Squat|Legs|Glutes||\nGoblet Squat|Legs|Glutes||\nZercher Squat|Legs|Glutes,Back||\nHack Squat|Legs|Glutes||\nPendulum Squat|Legs|Glutes||pendulum squats\nBelt Squat|Legs|Glutes||\nSmith Machine Squat|Legs|Glutes||smith squat\nLeg Press|Legs|Glutes||\nBulgarian Split Squat|Legs|Glutes||rear foot elevated split squat;bss\nSplit Squat|Legs|Glutes||\nWalking Lunge|Legs|Glutes||walking lunges;dumbbell walking lunge;dumbbell walking lunges\nReverse Lunge|Legs|Glutes||\nStep-Up|Legs|Glutes||step up\nLeg Extension|Legs||i|leg extensions;quad extension\nLying Leg Curl|Legs||i|leg curl;hamstring curl\nSeated Leg Curl|Legs||i|\nNordic Hamstring Curl|Legs||b|nordic curl;nordics;nordic ham curls\nHip Adduction|Legs||i|adductor machine\nSissy Squat|Legs||bi|\nBarbell Hip Thrust|Glutes|Legs||hip thrust\nMachine Hip Thrust|Glutes|Legs||\nGlute Bridge|Glutes|Legs||\nCable Kickback|Glutes||pi|glute kickback\nHip Abduction|Glutes||i|abductor machine\nCable Pull-Through|Glutes|Legs||pull through\nStanding Calf Raise|Calves||i|calf raise\nSeated Calf Raise|Calves||i|\nLeg Press Calf Raise|Calves||i|\nSingle-Leg Calf Raise|Calves||bi|\nPlank|Core||bi|\nSide Plank|Core||bi|\nHanging Leg Raise|Core||bi|leg raise\nHanging Knee Raise|Core||bi|knee raise\nCable Crunch|Core||i|kneeling cable crunch\nWeighted Crunch|Core||i|weighted crunches;weighted cruches;machine crunch\nCrunch|Core||bi|crunches\nSit-Up|Core||b|situp;sit up\nDecline Sit-Up|Core||b|\nAb Wheel Rollout|Core||b|ab wheel;rollout\nRussian Twist|Core||i|\nPallof Press|Core||i|\nDead Bug|Core||b|\nFarmer's Carry|Full Body|Arms,Core|pc|farmers walk;farmer carry\nSuitcase Carry|Core|Arms|pc|\nTurkish Get-Up|Full Body|Core,Shoulders|p|tgu\nPower Clean|Full Body|Legs,Back|y|\nHang Power Clean|Full Body|Legs,Back|y|hang clean\nClean and Jerk|Full Body|Legs,Shoulders|y|\nPower Snatch|Full Body|Legs,Shoulders|y|snatch\nPush Jerk|Shoulders|Legs|y|\nKettlebell Swing|Glutes|Legs,Back|y|kb swing\nMedicine Ball Slam|Full Body|Core|y|med ball slam;ball slam\nRotational Med Ball Throw|Core|Shoulders|y|med ball throw\nMed Ball Chest Pass|Chest|Arms|y|\nBox Jump|Legs|Glutes|by|box jumps\nBroad Jump|Legs|Glutes|by|standing long jump\nVertical Jump|Legs|Glutes,Calves|by|vertical jumps\nJump Squat|Legs|Glutes|by|jump squats;squat jump\nTrap Bar Jump|Legs|Glutes|y|\nDepth Jump|Legs|Calves|by|drop jump\nTuck Jump|Legs||by|\nPogo Hops|Calves|Legs|by|pogo jumps\nSkater Jump|Glutes|Legs|by|skater jumps;skaters\nSplit Squat Jump|Legs|Glutes|by|split squat jumps;jumping lunge\nSingle-Leg Hop|Legs|Calves|by|single-leg hops;single leg hops\nBurpee|Full Body||b|burpees\nJumping Jacks|Full Body||b|jumping jack;star jumps\nMountain Climber|Core||b|mountain climbers\nHigh Knees|Legs||b|running in place / high knees\nSled Push|Legs|Glutes|c|prowler push\nSled Pull|Legs|Back|c|\nBattle Ropes|Full Body||b|";
 const normEx = s => String(s || "").toLowerCase().replace(/dumbell/g, "dumbbell").replace(/\bdb\b/g, "dumbbell").replace(/\bbb\b/g, "barbell").replace(/\btri\b/g, "tricep")
   .replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean).map(t => t.length > 3 && t.endsWith("s") && !t.endsWith("ss") ? t.slice(0, -1) : t);
 const keysOf = s => { const t = normEx(s); return [t.slice().sort().join(" "), t.join("")]; };
@@ -1143,20 +1143,34 @@ function warmups(ex, kg){
   [[0.5, 5], [0.7, 3], [0.85, 1]].forEach(([f, r]) => { const w = roundTo(kg * f, 2.5); if (w > out[out.length-1].kg && w < kg) out.push({kg: w, reps: r}); });
   return out;
 }
+function weekStatus(){
+  const m = monday(new Date()), today = iso(new Date()), seen = new Set(), pending = [];
+  const done = new Set(wsess.filter(r => r.date >= iso(m) && r.wid).map(r => r.wid));
+  for (let k = 0; k < 7; k++) { const d = new Date(m); d.setDate(d.getDate() + k); const ds = iso(d); if (ds > today) break;
+    const p = dayPlan(d); if (!p || seen.has(p.id)) continue; seen.add(p.id);
+    if (p.created && iso(new Date(p.created)) > ds && ds !== today) continue; /* plan didn't exist yet that day */
+    if (!done.has(p.id)) pending.push({p, d: ds, day: DAYS[d.getDay()]}); }
+  /* lifting days first; easy cardio/core days can slot in anywhere */
+  pending.sort((a, b) => (/aerobic|conditioning|cardio/i.test(a.p.name) ? 1 : 0) - (/aerobic|conditioning|cardio/i.test(b.p.name) ? 1 : 0));
+  return {pending, done};
+}
 function todayCard(){
   if (active || builder) return "";
-  const p = dayPlan(), today = iso(new Date());
+  const today = iso(new Date()), WS = weekStatus(), first = WS.pending[0] || null;
+  if (!first) {
+    const tp = dayPlan(), doneT = tp && wsess.filter(r => r.date === today && r.wid === tp.id).sort((a, b) => b.start - a.start)[0];
+    if (doneT) { const S = summarize(doneT.items), n = nextDayPlan();
+      return `<section class="card sesscard" style="gap:8px"><span class="wid" style="justify-self:start">${esc(tp.id)}</span><h2>Done for today</h2>
+        <div class="hint">${esc(tp.name)} · ${num(S.vol)} kg · ${S.sets} working sets · ${mins(doneT.end - doneT.start)} min</div>
+        <button class="ghost" data-act="view" data-sid="${doneT.id}" style="justify-self:start">See the review</button>
+        ${n ? `<div class="hint">Next: <b style="color:var(--ink)">${esc(n.p.name)}</b> on ${DAYS[n.d.getDay()]}.</div>` : ""}</section>`; }
+  }
+  const p = first ? first.p : null, isToday = first && first.d === today;
   if (!p) {
     const n = nextDayPlan();
     return `<section class="card sesscard" style="gap:8px"><span class="wid" style="justify-self:start">${DAYS[new Date().getDay()]}</span><h2>Rest day</h2>
       <div class="hint">Recover. An easy 30–45 min walk, ride or swim is fine, nothing hard.${n ? ` Next: <b style="color:var(--ink)">${esc(n.p.name)}</b> on ${DAYS[n.d.getDay()]}.` : ""}</div></section>`;
   }
-  const done = wsess.filter(r => r.date === today && r.wid === p.id).sort((a, b) => b.start - a.start)[0];
-  if (done) { const S = summarize(done.items), n = nextDayPlan();
-    return `<section class="card sesscard" style="gap:8px"><span class="wid" style="justify-self:start">${esc(p.id)}</span><h2>Done for today</h2>
-      <div class="hint">${esc(p.name)} · ${num(S.vol)} kg · ${S.sets} working sets · ${mins(done.end - done.start)} min</div>
-      <button class="ghost" data-act="view" data-sid="${done.id}" style="justify-self:start">See the review</button>
-      ${n ? `<div class="hint">Next: <b style="color:var(--ink)">${esc(n.p.name)}</b> on ${DAYS[n.d.getDay()]}.</div>` : ""}</section>`; }
   const c = cueFor(p.name), todayCue = c ? Object.entries(c).find(([k]) => /today/i.test(k)) : null;
   let mins_ = 0;
   const rows = p.items.map((it, i) => {
@@ -1167,11 +1181,13 @@ function todayCard(){
       <span class="r"><b>${esc(it.sets)}</b> × ${esc(repsTxt)}${t.kg ? `<br><b>${num(t.kg)} kg${isPerHand(it.ex) ? "/hand" : ""}</b>` : ""}</span></li>`;
   }).join("");
   return `<section class="card sesscard" style="gap:6px">
-    <div class="wh"><div><span class="wid">${esc(p.id)} · ${DAYS[new Date().getDay()]}</span><h2 style="margin-top:6px">${esc(p.name.replace(/^\w+:\s*/, ""))}</h2>
+    <div class="wh"><div><span class="wid">${isToday ? "Today" : "Catch-up"} · ${esc(p.id)}</span><h2 style="margin-top:6px">${esc(p.name.replace(/^\w+:\s*/, ""))}</h2>
+      ${isToday ? "" : `<div class="hint" style="color:var(--ink)">${esc(first.day)}'s session hasn't been done this week.</div>`}
       <div class="meta">${p.items.length} exercises · about ${Math.round(mins_ / 5) * 5} min</div></div></div>
     ${todayCue ? `<div class="note" style="margin-top:4px">${todayCue[1].map(esc).join(" ")}</div>` : p.note ? `<div class="note" style="margin-top:4px">${esc(p.note)}</div>` : ""}
     <ol class="steps" style="margin-top:4px">${rows}</ol>
-    <button class="primary startbtn" data-act="start" data-pid="${esc(p.id)}">Start today's workout</button>
+    <button class="primary startbtn" data-act="start" data-pid="${esc(p.id)}">${isToday ? "Start today's workout" : `Start ${esc(first.day)}'s workout`}</button>
+    ${WS.pending.length > 1 ? `<div class="hint" style="margin-top:6px">Also still to do this week:</div><div class="planchips">${WS.pending.slice(1).map(x => `<button class="chip" data-act="start" data-pid="${esc(x.p.id)}">${esc(x.p.name)}</button>`).join("")}</div>` : ""}
   </section>`;
 }
 function startWorkout(pid){
@@ -1216,7 +1232,7 @@ function finishWorkout(endAt){
   cardio.forEach(c => clog.push({...c, date, sid: active.id}));
   const rec = {id: active.id, name: active.name, wid: active.wid, date, start: active.start, end, pbs, quality, skipped: skippedNames,
     cardio: cardio.map(c => ({...c})),
-    items: done.map(it => ({ex: it.ex, body: bodyOf(it.ex), helpers: helpersOf(it.ex), plan: it.plan || null, dur: itemDur(it, end),
+    items: done.map(it => ({ex: it.ex, body: bodyOf(it.ex), helpers: helpersOf(it.ex), plan: it.plan || null, target: it.queue ? (it.queue.filter(q => !q.wu).slice(-1)[0] || null) : null, dur: itemDur(it, end),
       sets: it.sets.map(x => ({kg: x.bw ? null : x.kg, reps: x.reps, bw: x.bw, ph: !!x.ph, ...(x.carry ? {carry: true, dist: x.dist} : {}), ...(typeof x.wu === "boolean" ? {wu: x.wu} : {}), ...(x.rir != null ? {rir: x.rir} : {})}))}))};
   wsess.push(rec);
   if (FRIENDS) ensureLib(done.map(it => it.ex));
@@ -1350,6 +1366,29 @@ function renderSummary(rec){
   </section>`;
 }
 
+/* For the Coach: did each planned exercise hit its planned sets, reps and weight? */
+function plannedInfo(){
+  const out = {}, lastTop = {};
+  wsess.filter(r => r.wid).slice().sort((a, b) => a.start - b.start).forEach(r => r.items.forEach(it => {
+    if (!it.plan || !it.sets || !it.sets.length) return;
+    const W = working(it.sets); if (!W.length) return;
+    const ns = (range2(it.plan.sets) || [1])[0], rr = range2(String(it.plan.reps).replace(/@.*$/, "")) || [1, 1];
+    const carry = W.some(x => x.carry), bwx = W.every(x => x.bw), val = x => carry ? (x.dist || 0) : x.reps;
+    const key = r.wid + "|" + it.ex, top = Math.max(0, ...W.filter(x => !x.bw && x.kg).map(x => x.kg));
+    const tgt = bwx ? null : it.target && it.target.kg ? it.target.kg : lastTop[key] != null ? lastTop[key] : planKg(it.plan.reps);
+    /* a set counts if it meets the planned weight and reps, or is at least as hard (heavier for fewer reps, same est. 1RM or more) */
+    const need = tgt ? tgt * (1 + rr[0] / 30) : 0;
+    const good = W.filter(x => bwx || carry || !tgt ? val(x) >= rr[0] : ((x.kg || 0) >= tgt - 0.01 && x.reps >= rr[0]) || (x.kg || 0) * (1 + x.reps / 30) >= need - 0.01).length;
+    if (top) lastTop[key] = top;
+    (out[it.ex] = out[it.ex] || {sessions: [], next: ""}).sessions.push({d: r.date, hit: good >= ns, heavy: !!(tgt && top > tgt + 0.01),
+      detail: `${good} of ${ns} sets at ${tgt ? num(tgt) + " kg × " : ""}${rr[0]}+${carry ? " m" : ""}`});
+  }));
+  allPlans().forEach(p => { if (!DAYS.some(dn => p.name.startsWith(dn))) return; p.items.forEach((it, k) => {
+    if (!out[it.ex]) return; const t = targetFor(p, k), reps = String(it.reps).replace(/\s*@.*$/, "");
+    const txt = `${p.name.slice(0, 3)} ${it.sets} × ${reps}${t.kg ? ` @ ${num(t.kg)} kg` : ""}`;
+    out[it.ex].next = out[it.ex].next ? out[it.ex].next + "; " + txt : txt; }); });
+  return out;
+}
 function lastActivity(a){ let t = a.start; a.items.forEach(it => it.sets.forEach(x => { if (x.ts && x.ts > t) t = x.ts; })); (a.cardio || []).forEach(c => { if (c.ts && c.ts > t) t = c.ts; }); return t; }
 function renderActive(){
   const a = active, idle = Date.now() - lastActivity(a);
@@ -1528,7 +1567,7 @@ function sessClick(e){
     if (!items.length) { m.textContent = "Add at least one exercise."; m.classList.add("err"); return; }
     items.forEach(x => { x.ex = exNames().find(n => n.toLowerCase() === x.ex.toLowerCase()) || x.ex; });
     if (builder.id) { const p = plans.find(x => x.id === builder.id); p.name = builder.name.trim(); p.items = items; }
-    else plans.push({id: nextPlanId(), name: builder.name.trim(), items});
+    else plans.push({id: nextPlanId(), name: builder.name.trim(), items, created: Date.now()});
     if (FRIENDS) ensureLib(items.map(x => x.ex));
     wr(PKEY, plans); builder = null; render();
   }
@@ -1896,6 +1935,15 @@ function analyse(store, opts) {
       prior: prior ? {kg: prior.kg, reps: prior.reps, e1: r1(e1rm(prior.kg, prior.reps))} : null,
       bestTop: (S.find(x => x.best === allBest) || {}).top || null});
   }
+  /* lifts in your plan are judged on hitting the plan, not on beating a best every session */
+  const PL = opts.planned || {};
+  for (const l of liftReport) {
+    const P = PL[l.ex]; if (!P) continue;
+    const ps = P.sessions.filter(x => x.d <= nowDate && now - dayNum(x.d) < 28); if (!ps.length) continue;
+    let miss = 0; for (let k = ps.length - 1; k >= 0 && !ps[k].hit; k--) miss++;
+    l.plan = {n: ps.length, hits: ps.filter(x => x.hit).length, miss, last: ps[ps.length - 1], next: P.next || "", sessions: ps};
+    if (l.status !== 'pr') l.status = miss === 0 ? 'onplan' : miss >= 2 ? 'offplan' : 'missed';
+  }
   liftReport.sort((a, b) => b.n - a.n);
 
   // conditioning
@@ -1925,7 +1973,7 @@ function analyse(store, opts) {
   // ---- scores ----
   const consistency = Math.round(100 * Math.min(1, perWeek / target));
   const active = liftReport.filter(l => l.recent && l.n >= 3);
-  const progPts = active.reduce((a, l) => a + ({pr: 1, progressing: 1, holding: .6, stalled: .3, regressing: 0}[l.status] ?? .5), 0);
+  const progPts = active.reduce((a, l) => a + ({pr: 1, progressing: 1, onplan: 1, holding: .6, missed: .6, stalled: .3, offplan: .3, regressing: 0}[l.status] ?? .5), 0);
   const progression = active.length ? Math.round(100 * progPts / active.length) : null;
   const balance = Math.round(100 * MAIN_GROUPS.reduce((a, g) => a + Math.min(1, groups[g].wk / GROUPS[g].target), 0) / MAIN_GROUPS.length);
   const improvedCardio = cardioReport.filter(c => c.n >= 2 && c.last < c.first).length;
@@ -1955,8 +2003,16 @@ function gradeWorkons(prevReport, store, A) {
   const spanDays = Math.max(1, dayNum(A.nowDate) - dayNum(since));
   return prevReport.workons.map(w => {
     const c = w.check || {}; let result = 'pending', detail = '';
+    if (c.type === 'beat' && (A.lifts || []).some(l => l.ex === c.ex && l.plan)) return {...w, result: 'retired', detail: 'Replaced by your plan: hitting each planned session is the target now.'};
     if (!newDays.length) return {...w, result: 'pending', detail: 'No training logged since that update.'};
-    if (c.type === 'beat') {
+    const PLf = (A.lifts || []).find(l => l.ex === c.ex && l.plan);
+    if (c.type === 'beat' && PLf) { result = 'retired'; detail = 'Replaced by your plan: hitting each planned session is the target now.'; }
+    else if (c.type === 'plan') {
+      const ps = PLf ? PLf.plan.sessions.filter(x => x.d > since) : [];
+      result = !ps.length ? 'pending' : ps.some(x => x.hit) ? 'hit' : 'missed';
+      detail = ps.length ? ps.map(x => `${x.d.slice(5)}: ${x.detail}${x.hit ? " ✓" : ""}`).join(" · ") : `${c.ex} not trained from the plan yet.`;
+    }
+    else if (c.type === 'beat') {
       const list = newSets.filter(s => s.ex === c.ex && !s.wu && s.r > 0);
       if (!list.length) { result = 'missed'; detail = `${c.ex} wasn't trained.`; }
       else {
@@ -2023,6 +2079,13 @@ function buildFeedback(A, prev, graded) {
   for (const l of recentLifts.filter(l => l.status === 'regressing')) {
     misses.push(`${l.ex}: down — recent sessions average below 93% of your best (${l.best}${l.unit === 'kg' ? 'kg' : ' ' + l.unit}). Check sleep, food and fatigue before adding load.`);
     cands.push({p: 75, text: `${l.ex}: get back to ${l.bestTop && l.unit === 'kg' ? l.bestTop.kg + 'kg × ' + l.bestTop.r : 'your best'} before adding weight.`, why: 'A drop of 7%+ is more often fatigue or recovery than strength loss.', check: {type: 'beat', ex: l.ex, value: r1(l.best * 0.97), bw: l.unit === 'reps'}});
+  }
+  const onp = recentLifts.filter(l => l.status === 'onplan' || (l.status === 'pr' && l.plan));
+  if (onp.length) wins.push(`On plan: ${onp.map(l => l.ex).join(", ")}. Hit the planned sets, reps and weight last session.`);
+  for (const l of recentLifts.filter(l => l.status === 'missed')) misses.push(`${l.ex}: missed the plan last session (${l.plan.last.detail}). Repeat the same target next time.`);
+  for (const l of recentLifts.filter(l => l.status === 'offplan')) {
+    misses.push(`${l.ex}: missed the plan ${l.plan.miss} sessions running (${l.plan.last.detail}). ${l.plan.last.heavy ? "You're going heavier than planned and coming up short on reps: use the planned weight and get every rep." : "Drop about 5% and build back."}`);
+    cands.push({p: 80 + l.n, text: `${l.ex}: hit the plan${l.plan.next ? ` (${l.plan.next})` : ""}.`, why: 'Your plan already adds weight when you earn it; matching it is the overload.', check: {type: 'plan', ex: l.ex}});
   }
   const stale = A.lifts.filter(l => !l.recent && l.n >= 3).slice(0, 2);
   for (const l of stale) misses.push(`${l.ex}: not trained in 4+ weeks (last ${l.lastDate}).`);
@@ -2099,7 +2162,7 @@ function cardioName(t) { return ({row: 'Row', ski: 'SkiErg', 'run-in': 'Indoor r
 // ---- one full update ----
 function runUpdate(store, exp, prevReport, settings) {
   const nowDate = localDate(exp.exported || new Date().toISOString());
-  const A = analyse(store, {nowDate, weeklyTarget: settings.weeklyTarget});
+  const A = analyse(store, {nowDate, weeklyTarget: settings.weeklyTarget, planned: exp.planned});
   const graded = gradeWorkons(prevReport, store, A);
   const F = buildFeedback(A, prevReport, graded);
   // since last update
@@ -2124,7 +2187,7 @@ function runUpdate(store, exp, prevReport, settings) {
   let viewN = null, view = "latest", msg = "";
   const SNAP = {};
   const save = () => wr(RKEY, reports);
-  const STATUS = {pr: "PR", progressing: "Up", holding: "Holding", stalled: "Stalled", regressing: "Down", new: "New"};
+  const STATUS = {pr: "PR", progressing: "Up", holding: "Holding", stalled: "Stalled", regressing: "Down", new: "New", onplan: "On plan", missed: "Missed", offplan: "Off plan"};
   const fmtD = d => new Date(d + "T00:00:00").toLocaleDateString("en-AU", {day: "numeric", month: "short", year: "numeric"});
   const dl = (a, b) => b == null || a == null ? "" : a === b ? `<span class="co-d">±0</span>` : `<span class="co-d ${a > b ? "co-up" : "co-dn"}">${a > b ? "+" : ""}${a - b}</span>`;
 
@@ -2133,7 +2196,7 @@ function runUpdate(store, exp, prevReport, settings) {
     const g = {}; log.forEach(l => (g[l.ex + "|" + l.date] = g[l.ex + "|" + l.date] || []).push(l));
     const wuIds = new Set(); Object.values(g).forEach(ss => { const f = wuFlags(ss); ss.forEach((x, k) => { if (f[k]) wuIds.add(x.id); }); });
     const L = log.map(l => wuIds.has(l.id) ? {...l, wu: true} : l);
-    return {app: "gym-library", exported: exportedIso, log: L, bodyweight: bwlog, sessions: wsess, cardio: clog, prior: prmap};
+    return {app: "gym-library", exported: exportedIso, log: L, bodyweight: bwlog, sessions: wsess, cardio: clog, prior: prmap, planned: plannedInfo()};
   }
   function strip(r) { delete r._hard; delete r._body; return r; }
 
@@ -2192,7 +2255,7 @@ function runUpdate(store, exp, prevReport, settings) {
     h += `<section class="card"><h2>Slipping</h2><ul class="co-list co-miss">${R.misses.map(m => `<li>${esc(m)}</li>`).join("") || "<li>Nothing flagged.</li>"}</ul></section>`;
     h += `<section class="card"><h2>Working</h2><ul class="co-list co-win">${R.wins.map(m => `<li>${esc(m)}</li>`).join("") || "<li>No clear wins this time.</li>"}</ul></section>`;
     if (R.goals && R.goals.length) h += `<section class="card"><h2>Comeback goals</h2>${R.goals.map(g => `<div class="co-bar co-goal"><span>${esc(g.text)}</span><div class="co-tr"><i style="width:${Math.min(100, g.pct)}%;background:var(--accent)"></i></div><b>${g.pct}%</b></div>`).join("")}</section>`;
-    h += `<section class="card"><h2>Lifts</h2><table class="co-t"><tr><th>Lift</th><th>Status</th><th>Best</th><th>Trend</th></tr>${R.lifts.map(l => `<tr><td>${esc(l.ex)}<span class="hint">${l.n} session${l.n > 1 ? "s" : ""}${l.recent ? "" : " · not recent"}</span></td><td><span class="co-s co-s-${l.status}">${STATUS[l.status]}</span></td><td class="co-n">${l.best}${l.unit === "kg" ? "" : `<span class="hint"> ${esc(l.unit)}</span>`}</td><td>${spark(l.series)}</td></tr>`).join("")}</table><div class="hint" style="margin-top:6px">Best = estimated 1RM (Epley), per hand for dumbbells.</div></section>`;
+    h += `<section class="card"><h2>Lifts</h2><table class="co-t"><tr><th>Lift</th><th>Status</th><th>Best</th><th>Trend</th></tr>${R.lifts.map(l => `<tr><td>${esc(l.ex)}<span class="hint">${l.n} session${l.n > 1 ? "s" : ""}${l.recent ? "" : " · not recent"}${l.plan ? ` · plan hit ${l.plan.hits} of ${l.plan.n}` : ""}</span></td><td><span class="co-s co-s-${l.status}">${STATUS[l.status]}</span></td><td class="co-n">${l.best}${l.unit === "kg" ? "" : `<span class="hint"> ${esc(l.unit)}</span>`}</td><td>${spark(l.series)}</td></tr>`).join("")}</table><div class="hint" style="margin-top:6px">Best = estimated 1RM (Epley), per hand for dumbbells. Lifts in your weekday plan are judged on hitting the plan: On plan, Missed (once), Off plan (twice running).</div></section>`;
     const mains = ["chest", "back", "shoulders", "biceps", "triceps", "quads", "hamstrings", "core"], maxV = Math.max(24, ...mains.map(g => R.groups[g].wk));
     h += `<section class="card"><h2>Weekly hard sets</h2>${mains.map(g => { const v = R.groups[g], t = GROUPS[g].target, c = v.wk >= t ? "#3E9B63" : v.wk >= t * .6 ? "#D3962A" : "#D0473A";
       return `<div class="co-bar"><span>${GROUPS[g].label}</span><div class="co-tr" style="position:relative;height:12px"><i style="width:${v.wk / maxV * 100}%;background:${c}"></i><em style="left:${t / maxV * 100}%"></em></div><b>${v.wk}</b></div>`; }).join("")}
@@ -2298,7 +2361,7 @@ function runUpdate(store, exp, prevReport, settings) {
   function drawLifts(R) {
     const c = document.createElement("canvas"); c.width = 1080; c.height = 1350; const x = c.getContext("2d");
     baseCard(x, R, "LIFTS");
-    const COL = {pr: ACC, progressing: "#2F7D4F", holding: MUTE, stalled: "#B7791F", regressing: "#B42318", new: "#8A918E"};
+    const COL = {pr: ACC, progressing: "#2F7D4F", holding: MUTE, stalled: "#B7791F", regressing: "#B42318", new: "#8A918E", onplan: "#2F7D4F", missed: "#B7791F", offplan: "#B42318"};
     const goals = R.goals || [];
     const lifts = R.lifts.filter(l => l.recent && l.unit === "kg").sort((a, b) => (goals.some(g => g.ex === b.ex) - goals.some(g => g.ex === a.ex)) || b.n - a.n).slice(0, 5);
     let y = 272;
@@ -2422,6 +2485,16 @@ if (!FRIENDS && !store.get("gl-mig-2")) {
     store.set("gl-mig-2", "1");
   } catch(e) {}
 }
+/* 13 Nov 2026: the per-arm pulldown sets were on a plate-loaded machine, not the cable stack. */
+if (!FRIENDS && !store.get("gl-mig-4")) {
+  try {
+    log.forEach(l => { if (l.ex === "Lat Pulldown" && l.date === "2026-11-13" && l.ph) l.ex = "Plate-Loaded Lat Pulldown"; });
+    wsess.forEach(r => { if (r.date !== "2026-11-13") return; const k = r.items.findIndex(it => it.ex === "Lat Pulldown"); if (k < 0) return;
+      const it = r.items[k], pl = it.sets.filter(x => x.ph); if (!pl.length) return;
+      it.sets = it.sets.filter(x => !x.ph); r.items.splice(k + 1, 0, {ex: "Plate-Loaded Lat Pulldown", body: "Back", helpers: ["Arms"], plan: null, dur: 0, sets: pl}); });
+    phmap["plate-loaded lat pulldown"] = true; saveLog(); wr(SKEY, wsess); wr(HKEY, phmap); store.set("gl-mig-4", "1");
+  } catch(e) {}
+}
 /* Carries logged before distance tracking: the reps box held metres. */
 if (!store.get("gl-mig-3")) {
   try {
@@ -2432,7 +2505,7 @@ if (!store.get("gl-mig-3")) {
     saveLog(); wr(SKEY, wsess); saveActive(); store.set("gl-mig-3", "1");
   } catch(e) {}
 }
-if (openToday && (active || dayPlan())) { tab = "lifts"; liftView = "train"; }
+if (openToday && (active || dayPlan() || weekStatus().pending.length)) { tab = "lifts"; liftView = "train"; }
 render();
 async function doRefresh(){
   try { const r = await navigator.serviceWorker?.getRegistration(); await r?.update(); } catch(err) {}

@@ -42,6 +42,7 @@ Machine Low Row|Back|Arms||low row;machine row low
 Machine Row|Back|Arms||chest supported machine row;hammer strength row
 Meadows Row|Back|Arms|p|
 Lat Pulldown|Back|Arms||lat pull down;pull down;pulldown;lat pull-down;wide grip pulldown
+Plate-Loaded Lat Pulldown|Back|Arms|p|plate loaded lat pulldown;plate loaded pulldown;iso-lateral pulldown;iso lateral pulldown;hammer strength pulldown;matrix pulldown
 Close-Grip Lat Pulldown|Back|Arms||close grip pulldown;v bar pulldown
 Single-Arm Lat Pulldown|Back|Arms|p|single arm pulldown
 Straight-Arm Pulldown|Back||i|straight arm pulldown;lat prayer
